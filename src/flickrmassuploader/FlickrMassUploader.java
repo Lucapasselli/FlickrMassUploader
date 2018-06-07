@@ -60,16 +60,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Flickr flickr;
     static Auth auth;
     static AuthInterface authInterface;
-    static String TokenAccesso = "";
+    static String AccessToken = "";
     static String TokenSecret = "";
     static String Nsid;
     static String User="";
     static String Directory = "";
     static String ConfirmationCode = "";
-    static Map<String, String> fotolocali;
-    static Map<String, String> fotoremote;
-    static Map<String, String> albumremoti;
-    static Map<String, String> albumlocali;
+    static Map<String, String> localphotos;
+    static Map<String, String> remotephotos;
+    static Map<String, String> remotealbums;
+    static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static backup Backup;
     static Thread processo;
@@ -101,7 +101,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             TextFieldPhotoDirectory.setText(Directory);
         }
         //System.out.println(TokenAccesso);
-        if (TokenAccesso != null && TokenSecret != null && !TokenAccesso.equalsIgnoreCase("") && !TokenSecret.equalsIgnoreCase("")) {
+        if (AccessToken != null && TokenSecret != null && !AccessToken.equalsIgnoreCase("") && !TokenSecret.equalsIgnoreCase("")) {
             LabelUser.setText("USER: " + User);
             TextFieldApiKey.setEnabled(false);
             TextFieldSharedSecret.setEnabled(false);
@@ -353,7 +353,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         // TODO add your handling code here:
         //Mi autentico
-        TokenAccesso = "";
+        AccessToken = "";
         TokenSecret = "";
         apiKey = TextFieldApiKey.getText();
         sharedSecret = TextFieldSharedSecret.getText();
@@ -394,7 +394,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         TextFieldSharedSecret.setEnabled(true);
         TextFieldApiKey.setText("");
         TextFieldSharedSecret.setText("");
-        TokenAccesso = "";
+        AccessToken = "";
         TokenSecret = "";
         apiKey = "";
         sharedSecret = "";
@@ -551,14 +551,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         //If TokenAccesso or TokenSecret are missing then you need to get them
         //else we try to authenticate
         boolean connectionOK = true;
-        if (TokenAccesso == null || TokenSecret == null || TokenAccesso.equalsIgnoreCase("") || TokenSecret.equalsIgnoreCase("")) {
+        if (AccessToken == null || TokenSecret == null || AccessToken.equalsIgnoreCase("") || TokenSecret.equalsIgnoreCase("")) {
             connectionOK =FirstAuth();
         } else {
             flickr = new Flickr(apiKey, sharedSecret, new REST());
             //Flickr.debugStream = false;
             authInterface = flickr.getAuthInterface();
             try {
-                auth = authInterface.checkToken(TokenAccesso, TokenSecret);
+                auth = authInterface.checkToken(AccessToken, TokenSecret);
                 Nsid = auth.getUser().getId();
                 User = auth.getUser().getUsername();
                 // This token can be used until the user revokes it.
@@ -626,7 +626,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     Token requestToken = authInterface.getAccessToken(token, new Verifier(tokenKey));
                     auth = authInterface.checkToken(requestToken);
                     // This token can be used until the user revokes it.
-                    TokenAccesso = requestToken.getToken();
+                    AccessToken = requestToken.getToken();
                     TokenSecret = requestToken.getSecret();
                     Nsid = auth.getUser().getId();
                     User = auth.getUser().getUsername();
@@ -708,11 +708,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 //Se non esiste un album con quel nome lo creao altrimenti aggiun go la foto a quello esistente
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
 
-                if (albumremoti.get(Album) == null) {
+                if (remotealbums.get(Album) == null) {
                     Photoset Pset = psi.create(Album, Album, photoId);
-                    albumremoti.put(Album, Pset.getId());
+                    remotealbums.put(Album, Pset.getId());
                 } else {
-                    psi.addPhoto(albumremoti.get(Album), photoId);
+                    psi.addPhoto(remotealbums.get(Album), photoId);
                 }
             } else {
                 photoId = null;
@@ -751,7 +751,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     // Numero Di Foto Nell'album
                     //    System.out.println("Numero Foto nell'album="+Pset.getPhotoCount());
                     //photos invece è l'elenco delle foto dell'album
-                    albumremoti.put(Pset.getTitle(), Pset.getId());
+                    remotealbums.put(Pset.getTitle(), Pset.getId());
                     PhotoList photos = psi.getPhotos(Pset.getId(), 10000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
@@ -761,7 +761,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         }
                         //elenco i dettagli delle foto contenute nell'album
                         Photo foto = (Photo) photos.get(i);
-                        fotoremote.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
+                        remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
                         // System.out.println(Pset.getTitle()+"|"+foto.getTitle());
                     }
 
@@ -791,11 +791,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             Long InitialTime = System.currentTimeMillis();
             LabelTimeRemaining.setText("Time Remaining:");
             //Long MomentTime;
-            fotoremote = new HashMap<>();
-            albumremoti = new HashMap<>();
+            remotephotos = new HashMap<>();
+            remotealbums = new HashMap<>();
             phototoupload = new HashMap<>();
-            albumlocali = new HashMap<>();
-            fotolocali = new HashMap<>();
+            localalbums = new HashMap<>();
+            localphotos = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
@@ -811,15 +811,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 ElencoFotoLocali(Directory, 0, Directory);
 
                 // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
-                fotoremote.forEach((k, v)
+                remotephotos.forEach((k, v)
                         -> {
 
                     //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
-                    if (fotolocali.get(k) == null && (sync == 1 || sync == 2)) {
+                    if (localphotos.get(k) == null && (sync == 1 || sync == 2)) {
                         //cancello il file solo se l'album è presente tra quelli locali ma la foto non esiste più
                         //oppure è attivo il fullsync
 
-                        if (albumlocali.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
+                        if (localalbums.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
                             try {
                                 // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                                 // in this case we block the online operation
@@ -839,10 +839,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 //Faccio L'elenco delle cartelle e foto locali e per ogni file se non lo trovo
                 // Faccio l'upload delle foto se non sono già presenti su flickr
                 if (!FermaProcessi) {
-                    fotolocali.forEach((k, v)
+                    localphotos.forEach((k, v)
                             -> {
 
-                        if (fotoremote.get(k) == null) {
+                        if (remotephotos.get(k) == null) {
 
                             //se non trovo il corrispondente file locale nel cloud di flickr allora lo carico sul sito
                             if (VerifyExtension(v)) // Verifico che l'estensione sia compatibile con i caricamenti di Flickr anche se non servirebbe perchè lo faccio prima
@@ -871,7 +871,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     LabelStartTime.setText("Started Time: "
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
-                Message("Number photo on your computer -> " + fotolocali.size());
+                Message("Number photo on your computer -> " + localphotos.size());
                 Message("Number of photo to upload -> " + numeroFoto);
 
                 final int[] count = {0};
@@ -964,18 +964,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     } else {
                         if (indentamento == 0) {
                             if (VerifyExtension(file.getCanonicalPath())) {
-                                albumlocali.put("root", "ok");
+                                localalbums.put("root", "ok");
 
                                 //Se l'instradamento è zero vuol dire che sono nella root e quindi come album gli do il root
-                                fotolocali.put("root" + "|" + makeSafeFilename(file.getName()), file.getCanonicalPath());
+                                localphotos.put("root" + "|" + makeSafeFilename(file.getName()), file.getCanonicalPath());
                             }
                         } else {
                             if (VerifyExtension(file.getCanonicalPath())) {
-                                albumlocali.put(makeSafeFilename(DirRiferimento.substring(Directory.length())), "ok");
+                                localalbums.put(makeSafeFilename(DirRiferimento.substring(Directory.length())), "ok");
                                 //System.out.println(indentamento);
                                 // Se l'indentamento è maggiore di uno il nome album è quello della prima cartella e il mome file è l'insieme
                                 // del nome delle cartelle successive e il nome file
-                                fotolocali.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + makeSafeFilename(file.getCanonicalPath().substring(DirRiferimento.length())), file.getCanonicalPath());
+                                localphotos.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + makeSafeFilename(file.getCanonicalPath().substring(DirRiferimento.length())), file.getCanonicalPath());
                             }
                         }
 
@@ -999,7 +999,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             prop.setProperty("apiKey", apiKey);
             prop.setProperty("sharedSecret", sharedSecret);
-            if (TokenAccesso!=null) prop.setProperty("TokenAccesso", TokenAccesso);
+            if (AccessToken!=null) prop.setProperty("TokenAccesso", AccessToken);
             if (TokenSecret!=null) prop.setProperty("TokenSecret", TokenSecret);
             prop.setProperty("Directory", Directory);
             prop.setProperty("Sync", String.valueOf(sync));
@@ -1025,7 +1025,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             // get properties values
             apiKey = prop.getProperty("apiKey");
             sharedSecret = prop.getProperty("sharedSecret");
-            TokenAccesso = prop.getProperty("TokenAccesso");
+            AccessToken = prop.getProperty("TokenAccesso");
             TokenSecret = prop.getProperty("TokenSecret");
             Directory = prop.getProperty("Directory");
             if (prop.getProperty("Sync")!=null)
