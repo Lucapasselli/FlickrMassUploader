@@ -72,8 +72,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static backup Backup;
-    static Thread processo;
-    static boolean FermaProcessi = false;
+    static Thread process;
+    static boolean StopProcess = false;
     static boolean GraphicsOn = true;
 
     static int sync = 0;
@@ -86,7 +86,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         File proprieta = new File("config.properties");
         //prima di leggere il file devo verificare se esiste
         if (proprieta.exists()) {
-            LeggiFileProprieta();
+            ReadPropertiesFile();
         }
         initComponents();
         ButtonStop.setVisible(false);
@@ -375,14 +375,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         //Mi autentico
         sync = ComboBoxSyncType.getSelectedIndex();
         Directory = TextFieldPhotoDirectory.getText();
-        FermaProcessi = false;
+        StopProcess = false;
         boolean connectionOK;
         connectionOK = auth();
         if (connectionOK) {
 
             Backup = new backup();
-            processo = new Thread(Backup);
-            processo.start();
+            process = new Thread(Backup);
+            process.start();
 
         }
 
@@ -448,17 +448,17 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         Directory = TextFieldPhotoDirectory.getText();
         sync = ComboBoxSyncType.getSelectedIndex();
         
-        ScriviFileProprieta();
+        WritePropertiesFile();
         JOptionPane.showMessageDialog(null, "Options successfully saved!");
 
     }//GEN-LAST:event_ButtonSaveActionPerformed
 
     private void ButtonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonStopActionPerformed
         // TODO add your handling code here:
-        FermaProcessi = true;
+        StopProcess = true;
 
         //Ripristina Interfaccia finita l'esecuzione del software
-        while (processo.isAlive()) {
+        while (process.isAlive()) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
@@ -529,7 +529,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     GraphicsOn = false;
                     if (args[0].equalsIgnoreCase("/backup")) {
                         gr = new FlickrMassUploader();
-                        FermaProcessi = false;
+                        StopProcess = false;
                         boolean connectionOK;
                         connectionOK = gr.auth();
                         if (connectionOK) {
@@ -636,7 +636,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     //Message("Realname: " + auth.getUser().getRealName());
                     Message("Username: " + auth.getUser().getUsername());
                     //Message("Permission: " + auth.getPermission().getType());
-                    ScriviFileProprieta();
+                    WritePropertiesFile();
                     Message("Authentication success");
                     JOptionPane.showMessageDialog(null, "Authentication Success, now you can upload your files");
                 } catch (FlickrException ex) {
@@ -680,7 +680,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }
 
     public String uploadfile(String filename, String TitoloFoto, String Album) throws Exception {
-        if (!FermaProcessi) {
+        if (!StopProcess) {
             String photoId;
             // boolean uploadableFile=true;
 
@@ -724,45 +724,40 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
 
-    public void ElencoFotoRemote() {
-        // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-        if (!FermaProcessi) {
+    public void RemotePhotoList() {
+        // if button stop is pressed StopProcess become true and we have to termiate all tasks
+        if (!StopProcess) {
             try {
-                // Mi autentico
-                /* RequestContext rc = RequestContext.getRequestContext();
-            rc.setAuth(auth);*/
+
 
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
-                //ritorna il numero di Album nella collezione
-                //     System.out.println(psi.getPhotosetCount(Nsid));
-                //crea un itarator per scorrere la lista degli album
+                //create an itarator to list albums
+                //sets is the list of albums
                 Iterator sets = psi.getList(Nsid).getPhotosets().iterator();
 
                 while (sets.hasNext()) {
-                    //Pset non è altro che l'album
-                    // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-                    if (FermaProcessi) {
+                    
+                    // if button stop is pressed StopProcess become true and we have to termiate all tasks
+                    if (StopProcess) {
                         break;
                     }
+                    //Pset it's the selected album
                     Photoset Pset = (Photoset) sets.next();
 
-                    // Titolo dell'album
-                    //    System.out.println("Titolo Album="+Pset.getTitle());
-                    // Numero Di Foto Nell'album
-                    //    System.out.println("Numero Foto nell'album="+Pset.getPhotoCount());
-                    //photos invece è l'elenco delle foto dell'album
+
                     remotealbums.put(Pset.getTitle(), Pset.getId());
+                    
+                    //photos is the list of photos on selected album
                     PhotoList photos = psi.getPhotos(Pset.getId(), 10000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-                        if (FermaProcessi) {
+                        if (StopProcess) {
                             break;
                         }
-                        //elenco i dettagli delle foto contenute nell'album
+                        //foto is the selected photo
                         Photo foto = (Photo) photos.get(i);
                         remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
-                        // System.out.println(Pset.getTitle()+"|"+foto.getTitle());
                     }
 
                 }
@@ -775,8 +770,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     public void BackupYourFiles() {
 
-        // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-        if (!FermaProcessi) {
+        // if button stop is pressed StopProcess become true and we have to termiate all tasks
+        if (!StopProcess) {
             Message("Directory to sync -> " + Directory);
             if (sync == 0) {
                 Message("Sync Type -> NO");
@@ -805,10 +800,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 //Faccio l'elenco degli album e delle foto su flickr
 
                 Message("Retreiving Remote Photo List");
-                ElencoFotoRemote();
+                RemotePhotoList();
                 //elenco fotolocali non fa altro che compilare l'hasmap fotolocali con l'elenco delle foto sull'hd
                 Message("Retreiving Local Photo List");
-                ElencoFotoLocali(Directory, 0, Directory);
+                LocalPhotoList(Directory, 0, Directory);
 
                 // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
                 remotephotos.forEach((k, v)
@@ -823,7 +818,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             try {
                                 // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                                 // in this case we block the online operation
-                                if (!FermaProcessi) {
+                                if (!StopProcess) {
                                     //Cancello le foto
                                     Message("Deleting file " + k + " from the cloud");
                                     flickr.getPhotosInterface().delete(v);
@@ -838,7 +833,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                 //Faccio L'elenco delle cartelle e foto locali e per ogni file se non lo trovo
                 // Faccio l'upload delle foto se non sono già presenti su flickr
-                if (!FermaProcessi) {
+                if (!StopProcess) {
                     localphotos.forEach((k, v)
                             -> {
 
@@ -882,7 +877,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     try {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                         // in this case we block the online operation
-                        if (!FermaProcessi) {
+                        if (!StopProcess) {
 
                             Message("Uploading file " + v + " to the cloud " + count[0] + " of " + numeroFoto);
                             uploadfile(v, k.substring(k.lastIndexOf("|") + 1), k.substring(0, k.lastIndexOf("|")));
@@ -907,7 +902,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             }
 
         }
-        if (FermaProcessi) {
+        if (StopProcess) {
             Message("Backup Stopped by User!");
             Message("-------------------------------------------------");
             if (GraphicsOn) {
@@ -934,9 +929,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
 
-    public void ElencoFotoLocali(String dir, int indentamento, String DirRiferimento) throws IOException {
+    public void LocalPhotoList(String dir, int indentamento, String DirRiferimento) throws IOException {
         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-        if (!FermaProcessi) {
+        if (!StopProcess) {
             int indent;
             File Dir = new File(dir);
 
@@ -956,10 +951,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         //l'album sarà SARDEGNA e il nome della foto sarà lunedi_primafoto.jpg
                         if (indent > 1) {
 
-                            ElencoFotoLocali(file.getCanonicalPath(), indent, DirRiferimento);
+                            LocalPhotoList(file.getCanonicalPath(), indent, DirRiferimento);
                         } else {
 
-                            ElencoFotoLocali(file.getCanonicalPath(), indent, file.getCanonicalPath());
+                            LocalPhotoList(file.getCanonicalPath(), indent, file.getCanonicalPath());
                         }
                     } else {
                         if (indentamento == 0) {
@@ -990,7 +985,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
 
-    public void ScriviFileProprieta() {
+    public void WritePropertiesFile() {
 
         try {
             Properties prop = new Properties();
@@ -1015,7 +1010,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
 
-    public void LeggiFileProprieta() {
+    public void ReadPropertiesFile() {
 
         try {
             Properties prop = new Properties();
