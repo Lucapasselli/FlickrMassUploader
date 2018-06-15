@@ -111,6 +111,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             ButtonUpload.setEnabled(false);
         }
         ComboBoxSyncType.setSelectedIndex(sync);
+        String version = this.getClass().getPackage().getImplementationVersion();
+        Message("Version : "+version);
 
     }
 
@@ -130,7 +132,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         TextFieldApiKey = new javax.swing.JTextField();
         TextFieldSharedSecret = new javax.swing.JTextField();
         LabelUser = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         LabelPhotoDirectory = new javax.swing.JLabel();
         TextFieldPhotoDirectory = new javax.swing.JTextField();
         ButtonDeleteCredentials = new javax.swing.JButton();
@@ -169,8 +170,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         LabelUser.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         LabelUser.setText("You don't have a valid Access Token yet, Please request a new Token");
-
-        jLabel1.setText("Version: Beta 1.01");
 
         LabelPhotoDirectory.setText("Photo Directory:");
 
@@ -284,10 +283,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1))
                         .addContainerGap())))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ButtonChooseDirectory, ButtonDeleteCredentials, ButtonSave});
@@ -295,9 +290,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(LabelApiKey)
                     .addComponent(TextFieldApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -799,10 +792,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             try {
                 //Faccio l'elenco degli album e delle foto su flickr
 
-                Message("Retreiving Remote Photo List");
+                Message("Retrieving Remote Photo List");
                 RemotePhotoList();
                 //elenco fotolocali non fa altro che compilare l'hasmap fotolocali con l'elenco delle foto sull'hd
-                Message("Retreiving Local Photo List");
+                Message("Retrieving Local Photo List");
                 LocalPhotoList(Directory, 0, Directory);
 
                 // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
@@ -840,13 +833,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         if (remotephotos.get(k) == null) {
 
                             //se non trovo il corrispondente file locale nel cloud di flickr allora lo carico sul sito
-                            if (VerifyExtension(v)) // Verifico che l'estensione sia compatibile con i caricamenti di Flickr anche se non servirebbe perchè lo faccio prima
-                            {
                                 phototoupload.put(k, v);
                                 //  uploadfile(v, k.substring(k.lastIndexOf("|")+1),k.substring(0,k.lastIndexOf("|")));
-                            } else {
-                                //       Message("File "+v+" is not uploadable beacouse it's not an image or a video file");   
-                            }
+
 
                             //La funzione di upload si occuperà del controllo e la gestione degli album
                         } else {
@@ -1126,7 +1115,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JTextField TextFieldApiKey;
     private javax.swing.JTextField TextFieldPhotoDirectory;
     private javax.swing.JTextField TextFieldSharedSecret;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }
