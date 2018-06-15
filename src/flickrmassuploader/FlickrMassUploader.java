@@ -819,7 +819,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                                 // in this case we block the online operation
                                 if (!StopProcess) {
-                                    //Cancello le foto
+                                    //Delete photos that are no longer present local
                                     Message("Deleting file " + k + " from the cloud");
                                     flickr.getPhotosInterface().delete(v);
                                 }
@@ -921,11 +921,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     public void Message(String messaggio) {
         if (GraphicsOn) {
-            TextAreaLog.append(messaggio + "\n");
+            TextAreaLog.append(String.valueOf(new Timestamp(System.currentTimeMillis()))+" : "+messaggio + "\n");
             TextAreaLog.setCaretPosition(TextAreaLog.getDocument().getLength());
 
         } else {
-            System.out.println(messaggio);
+            System.out.println(String.valueOf(new Timestamp(System.currentTimeMillis()))+" : "+messaggio);
         }
     }
 
