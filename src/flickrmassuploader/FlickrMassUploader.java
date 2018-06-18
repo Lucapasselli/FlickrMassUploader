@@ -232,6 +232,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -249,7 +252,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+                                    .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
                                     .addComponent(TextFieldApiKey)
                                     .addComponent(TextFieldSharedSecret)
                                     .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -277,11 +280,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(LabelTimeRemaining))))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
         );
 
@@ -336,7 +336,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(LabelTimeRemaining))))
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         pack();
@@ -344,15 +344,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     private void ButtonRequestTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonRequestTokenActionPerformed
 
-        // TODO add your handling code here:
-        //Mi autentico
         AccessToken = "";
         TokenSecret = "";
         apiKey = TextFieldApiKey.getText();
         sharedSecret = TextFieldSharedSecret.getText();
         boolean connectionOK;
         connectionOK = auth();
-        //System.out.println(connectionOK);
         if (connectionOK) {
             ButtonRequestToken.setEnabled(false);
             ButtonUpload.setEnabled(true);
@@ -364,8 +361,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }//GEN-LAST:event_ButtonRequestTokenActionPerformed
 
     private void ButtonUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonUploadActionPerformed
-        // TODO add your handling code here:
-        //Mi autentico
+
         sync = ComboBoxSyncType.getSelectedIndex();
         Directory = TextFieldPhotoDirectory.getText();
         StopProcess = false;
@@ -541,34 +537,26 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     public boolean auth() {
 
-        //If TokenAccesso or TokenSecret are missing then you need to get them
+        //If AccessToken or TokenSecret are missing then you need to get them
         //else we try to authenticate
         boolean connectionOK = true;
         if (AccessToken == null || TokenSecret == null || AccessToken.equalsIgnoreCase("") || TokenSecret.equalsIgnoreCase("")) {
             connectionOK =FirstAuth();
         } else {
             flickr = new Flickr(apiKey, sharedSecret, new REST());
-            //Flickr.debugStream = false;
             authInterface = flickr.getAuthInterface();
             try {
                 auth = authInterface.checkToken(AccessToken, TokenSecret);
                 Nsid = auth.getUser().getId();
                 User = auth.getUser().getUsername();
                 // This token can be used until the user revokes it.
-                //Message("Token: " + auth.getToken());
-                //Message("Secret: " + auth.getTokenSecret());
-                //Message("nsid: " + auth.getUser().getId());
-                //Message("Realname: " + auth.getUser().getRealName());
                 Message("Username: " + auth.getUser().getUsername());
-                //Message("Permission: " + auth.getPermission().getType());
 
             } catch (FlickrException ex) {
                 Message("Auth2 error: " + ex.getErrorMessage() + " -> " + ex.getErrorCode());
-                // connectionOK=false;
                 Message("Request new authentication in progress...");
                 //if is not possible to have authentication you need new credentials
                 connectionOK = FirstAuth();
-                //System.out.println("auth"+connectionOK);
             } catch (com.flickr4java.flickr.FlickrRuntimeException ex) {
                 Message("Auth2 error: " + ex.getMessage() + " -> Probably you have no internet connection or the site is not avaiable");
                 connectionOK = false;
@@ -665,7 +653,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         String st = new String(fname);
         if (st.length() > 0) {
-            //L'eventuale underscore iniziale sul nome lo elimino
+            //if the first character of the name is an underscore i'll delete it
             st = st.substring(0, 1).replaceAll("_", "") + st.substring(1);
         }
 
@@ -675,7 +663,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     public String uploadfile(String filename, String TitoloFoto, String Album) throws Exception {
         if (!StopProcess) {
             String photoId;
-            // boolean uploadableFile=true;
 
             UploadMetaData metaData = new UploadMetaData();
 
@@ -687,24 +674,21 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             if (uploadableFile) {
                 Uploader uploader = flickr.getUploader();
-
                 File f = new File(filename);
                 photoId = uploader.upload(f, metaData);
                 Message(" File : " + filename + " uploaded: photoId = " + photoId);
 
-                /* SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-	    String dateInString = "31-08-1982 10:20:56";
-	    Date date = sdf.parse(dateInString);
-            foto.setDateTaken(date);*/
- /* PhotosInterface photoI=flickr.getPhotosInterface();
-           photoI.setMeta(foto.getId(), foto.getTitle(), "descrizione di prova");*/
-                //Se non esiste un album con quel nome lo creao altrimenti aggiun go la foto a quello esistente
+                /* PhotosInterface photoI=flickr.getPhotosInterface();
+                photoI.setMeta(foto.getId(), foto.getTitle(), "test description");*/
+
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
 
                 if (remotealbums.get(Album) == null) {
+                    //If don't exist the photo album i'll create it and add photo to album
                     Photoset Pset = psi.create(Album, Album, photoId);
                     remotealbums.put(Album, Pset.getId());
                 } else {
+                    // else i'll only add the photo to the appropriate album    
                     psi.addPhoto(remotealbums.get(Album), photoId);
                 }
             } else {
@@ -741,7 +725,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     remotealbums.put(Pset.getTitle(), Pset.getId());
                     
                     //photos is the list of photos on selected album
-                    PhotoList photos = psi.getPhotos(Pset.getId(), 10000, 1);
+                    PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
@@ -778,7 +762,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             Long InitialTime = System.currentTimeMillis();
             LabelTimeRemaining.setText("Time Remaining:");
-            //Long MomentTime;
             remotephotos = new HashMap<>();
             remotealbums = new HashMap<>();
             phototoupload = new HashMap<>();
@@ -804,6 +787,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                     //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
                     if (localphotos.get(k) == null && (sync == 1 || sync == 2)) {
+                        // i'll delete the file only if the photo album is present in local albums but not the photo
+                        // or sync option is fullscreen
                         //cancello il file solo se l'album è presente tra quelli locali ma la foto non esiste più
                         //oppure è attivo il fullsync
 
@@ -834,12 +819,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                             //se non trovo il corrispondente file locale nel cloud di flickr allora lo carico sul sito
                                 phototoupload.put(k, v);
-                                //  uploadfile(v, k.substring(k.lastIndexOf("|")+1),k.substring(0,k.lastIndexOf("|")));
 
-
-                            //La funzione di upload si occuperà del controllo e la gestione degli album
                         } else {
-                            //Se il file esiste già sul cloud lo salto e in caso avviso
                             //       System.out.println("File "+v+" already present to the cloud");
 
                         }
@@ -902,7 +883,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             Message("Backup Finished!");
             Message("-----------------------------------------------");
             if (GraphicsOn) {
-                LabelTimeRemaining.setText("BACKUP FINISHED!!!");
+                LabelTimeRemaining.setText("BACKUP FINISHED at "+String.valueOf(new Timestamp(System.currentTimeMillis())));
                 JOptionPane.showMessageDialog(null, "BACKUP FINISHED!!!");
             }
         }
@@ -949,14 +930,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         if (indentamento == 0) {
                             if (VerifyExtension(file.getCanonicalPath())) {
                                 localalbums.put("root", "ok");
-
-                                //Se l'instradamento è zero vuol dire che sono nella root e quindi come album gli do il root
+                                // if indentamento is 0 means that photos are on the root folder so name of the remote album will be root
                                 localphotos.put("root" + "|" + makeSafeFilename(file.getName()), file.getCanonicalPath());
                             }
                         } else {
                             if (VerifyExtension(file.getCanonicalPath())) {
                                 localalbums.put(makeSafeFilename(DirRiferimento.substring(Directory.length())), "ok");
-                                //System.out.println(indentamento);
+                                // if indentamento is > 1 means there are local sub folders other than the first
+                                // so remote album is the name of the first subfolder and the remote photo name is
+                                // name of subfolders plus file name
                                 // Se l'indentamento è maggiore di uno il nome album è quello della prima cartella e il mome file è l'insieme
                                 // del nome delle cartelle successive e il nome file
                                 localphotos.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + makeSafeFilename(file.getCanonicalPath().substring(DirRiferimento.length())), file.getCanonicalPath());
@@ -1042,17 +1024,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }
 
     public class backup implements Runnable {
-//class to make the backup stoppable
-        //  private boolean isInterrupted = false;
-        // boolean interrotto=false;
 
         public void run() {
 
-            /*  if(Thread.currentThread().isInterrupted()) {
-            // if interrupt is not overrided, isInterrupted would return
-           // false and the thread would continue to run. 
-            return;
-        }*/
             //Grayout alla buttons eccept the Stop thread Button
             ButtonUpload.setEnabled(false);
             ButtonDeleteCredentials.setEnabled(false);
@@ -1060,38 +1034,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             ButtonStop.setVisible(true);
 
             BackupYourFiles();
-            //BACKUP YOU FILES FUCTION CLONE
-            //authentication           
+            //BACKUP YOU FILES FUCTION CLONE        
 
-            //Ripristina Interfaccia finita l'esecuzione del software
+            //Restore graphics interface after backup completed
             ButtonUpload.setEnabled(true);
             ButtonDeleteCredentials.setEnabled(true);
             ButtonStop.setEnabled(false);
             ButtonStop.setVisible(false);
 
         }
-        /* @Override
-    public boolean isInterrupted() {
-        return isInterrupted;
-    }
-         */
 
- /* @Override
-        public void interrupt(){
-       //Ripristina interfaccia
-       ButtonUpload.setEnabled(true);
-       ButtonChooseDirectory.setEnabled(true);
-       ButtonDeleteCredentials.setEnabled(true);
-       ButtonRequestToken.setEnabled(true);
-       ButtonSave.setEnabled(true);
-       
-       isInterrupted = true;
-       super.interrupt();
-     
-    }*/
- /*public void ferma(){
-         interrotto=true;
-     }*/
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
