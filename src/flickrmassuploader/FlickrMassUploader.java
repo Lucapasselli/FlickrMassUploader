@@ -12,10 +12,13 @@ import com.flickr4java.flickr.RequestContext;
 import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.AuthInterface;
 import com.flickr4java.flickr.auth.Permission;
+import com.flickr4java.flickr.photos.Extras;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
+import com.flickr4java.flickr.photos.PhotosInterface;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
+import com.flickr4java.flickr.tags.Tag;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
 import static flickrmassuploader.FlickrMassUploader.Nsid;
@@ -37,11 +40,14 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,10 +78,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> localphotos;
     static Map<String, String> remotephotos;
     static Map<String, String> remotealbums;
+    static Map<String, String> remoteLastModifiedDate;
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static backup Backup;
     static Thread process;
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
 
@@ -679,16 +687,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Uploader uploader = flickr.getUploader();
                 File f = new File(filename);
                 List<String> tags = new ArrayList<String>();
-                tags.add("OrigFileName=\"" + filename.substring(Directory.length()) + "\"");
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-                tags.add("DateLastModified=\""+sdf.format(f.lastModified())+"\"");
+                tags.add("OrigFileName|=\"" + filename.substring(Directory.length()) + "\"");
+                tags.add("DateLastModified|=\""+sdf.format(f.lastModified())+"\"");
                 metaData.setTags(tags);
+                    photoId = uploader.upload(f, metaData);
+                    Message(" File : " + filename + " uploaded: photoId = " + photoId);
                 
-                photoId = uploader.upload(f, metaData);
-                Message(" File : " + filename + " uploaded: photoId = " + photoId);
+                    
+               /* PhotosInterface photoI=flickr.getPhotosInterface();
+                photoI.setMeta(photoId, TitoloFoto, "DateLastModified=\""+sdf.format(f.lastModified())+"\"");*/
 
-                /* PhotosInterface photoI=flickr.getPhotosInterface();
-                photoI.setMeta(foto.getId(), foto.getTitle(), "test description");*/
 
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
 
@@ -709,6 +717,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             return null;
         }
     }
+    
 
     public void RemotePhotoList() {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
@@ -732,9 +741,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
 
                     remotealbums.put(Pset.getTitle(), Pset.getId());
+                   // remoteLastModifiedDate
                     
                     //photos is the list of photos on selected album
-                    PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
+                    Set<String> extras = new HashSet<String>(Extras.ALL_EXTRAS);
+                    //extras.add("TAGS");
+                    //PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
+                    PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, 100000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
@@ -744,6 +757,23 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         //foto is the selected photo
                         Photo foto = (Photo) photos.get(i);
                         remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
+                        
+                        
+             
+                        Collection<Tag> tags=foto.getTags();
+    
+                                              
+                        for (Tag tag : tags) {
+                            Message(tag.getRaw());
+
+                          /*  if (tag.getValue().equals("test")) 
+                            {
+                                tagId = tag.getId();
+                                break;
+                            }*/
+                        }
+                        
+                        
                     }
 
                 }
@@ -830,6 +860,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 phototoupload.put(k, v);
 
                         } else {
+                            // if I find the same remote file but the dataTag was different I'll reUpload the file
+                            //    File f=new File(v);
                             //       System.out.println("File "+v+" already present to the cloud");
 
                         }
