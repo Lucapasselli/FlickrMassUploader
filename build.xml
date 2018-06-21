@@ -77,7 +77,7 @@
     <property name="store.jar.name" value="FlickrMassUploader"/>
 
     <!-- don't edit below this line -->
-    <property name="store.dir" value="FMU"/>
+    <property name="store.dir" value="ProgramExecutableJAR"/>
     <property name="temp.dir" value="temp"/>
     <property name="store.jar" value="${store.dir}/${store.jar.name}.jar"/>
 
