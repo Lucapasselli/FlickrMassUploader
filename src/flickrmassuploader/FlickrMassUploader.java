@@ -35,8 +35,11 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -675,6 +678,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             if (uploadableFile) {
                 Uploader uploader = flickr.getUploader();
                 File f = new File(filename);
+                List<String> tags = new ArrayList<String>();
+                tags.add("OrigFileName=\"" + filename.substring(Directory.length()) + "\"");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                tags.add("DateLastModified=\""+sdf.format(f.lastModified())+"\"");
+                metaData.setTags(tags);
+                
                 photoId = uploader.upload(f, metaData);
                 Message(" File : " + filename + " uploaded: photoId = " + photoId);
 
