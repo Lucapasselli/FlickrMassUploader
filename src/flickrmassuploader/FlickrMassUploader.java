@@ -86,6 +86,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
+    static boolean CheckDate=false;
 
     static int sync = 0;
     //sync=o means no sync
@@ -157,6 +158,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelStartTime = new javax.swing.JLabel();
         LabelTimeRemaining = new javax.swing.JLabel();
         LabelSyncDescription = new javax.swing.JLabel();
+        CheckBoxDate = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -236,6 +238,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncDescription.setText("SyncDescription");
         LabelSyncDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
+        CheckBoxDate.setText("If Checked Program analize the File's last modified date to choise to reupload or not a photo, otherwise the photo name is the unique check");
+        CheckBoxDate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CheckBoxDateActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -263,19 +272,20 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(CheckBoxDate)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE))
+                                    .addComponent(TextFieldPhotoDirectory)
                                     .addComponent(TextFieldApiKey)
                                     .addComponent(TextFieldSharedSecret)
-                                    .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(39, 39, 39)
-                                .addComponent(ButtonSave))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(17, 17, 17))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -292,7 +302,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 692, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
         );
 
@@ -319,11 +329,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LabelPhotoDirectory)
                     .addComponent(ButtonChooseDirectory))
-                .addGap(35, 35, 35)
+                .addGap(5, 5, 5)
+                .addComponent(CheckBoxDate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ButtonUpload)
@@ -489,6 +500,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     + "New photos in your computer directory will be uploaded to flickr</html>");
         }
     }//GEN-LAST:event_ComboBoxSyncTypeActionPerformed
+
+    private void CheckBoxDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckBoxDateActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CheckBoxDateActionPerformed
 
     /**
      * @param args the command line arguments
@@ -687,8 +702,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Uploader uploader = flickr.getUploader();
                 File f = new File(filename);
                 List<String> tags = new ArrayList<String>();
-                tags.add("OrigFileName|=\"" + filename.substring(Directory.length()) + "\"");
-                tags.add("DateLastModified|=\""+sdf.format(f.lastModified())+"\"");
+                tags.add("OrigFileName:=\"" + filename.substring(Directory.length()) + "\"");
+                tags.add("DateLastModified:=\""+sdf.format(f.lastModified())+"\"");
                 metaData.setTags(tags);
                     photoId = uploader.upload(f, metaData);
                     Message(" File : " + filename + " uploaded: photoId = " + photoId);
@@ -724,7 +739,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         if (!StopProcess) {
             try {
 
-
+                PhotosInterface photoI=flickr.getPhotosInterface();
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
                 //create an itarator to list albums
                 //sets is the list of albums
@@ -744,10 +759,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                    // remoteLastModifiedDate
                     
                     //photos is the list of photos on selected album
-                    Set<String> extras = new HashSet<String>(Extras.ALL_EXTRAS);
+                    //Set<String> extras = new HashSet<String>(Extras.ALL_EXTRAS);
                     //extras.add("TAGS");
-                    //PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
-                    PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, 100000, 1);
+                    PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
+                    //PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, 100000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
@@ -756,23 +771,38 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         }
                         //foto is the selected photo
                         Photo foto = (Photo) photos.get(i);
-                        remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
+                        //remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
                         
-                        
-             
-                        Collection<Tag> tags=foto.getTags();
-    
-                                              
+                        Collection<Tag> tags=photoI.getPhoto(foto.getId()).getTags();
+                        String Date="";
+                        String Filename="";
                         for (Tag tag : tags) {
-                            Message(tag.getRaw());
-
-                          /*  if (tag.getValue().equals("test")) 
+                            if (tag.getRaw().split(":=")[0].equalsIgnoreCase("DateLastModified")&&tag.getRaw().split(":=").length>1) 
                             {
-                                tagId = tag.getId();
-                                break;
-                            }*/
+                                //Message(tag.getRaw().split(":=")[1]);
+                                Date=tag.getRaw().split(":=")[1];
+                                //remoteLastModifiedDate.put(Pset.getTitle() + "|" + foto.getTitle(), tag.getRaw().split(":=")[1]);
+                            }
+                            if (tag.getRaw().split(":=")[0].equalsIgnoreCase("OrigFileName")&&tag.getRaw().split(":=").length>1) 
+                            {
+                                //Message(tag.getRaw().split(":=")[1]);
+                                Filename=tag.getRaw().split(":=")[1];
+                                //remoteLastModifiedDate.put(Pset.getTitle() + "|" + foto.getTitle(), tag.getRaw().split(":=")[1]);
+                            }
                         }
                         
+                        if (!Filename.equalsIgnoreCase(""))
+                        {
+                            
+                            remotephotos.put(Pset.getTitle() + "|" + Filename, foto.getId());
+                            if (!Date.equalsIgnoreCase(""))
+                            {
+                                remoteLastModifiedDate.put(Pset.getTitle() + "|" + Filename, Date);
+                            }
+                        }else
+                            {
+                               remotephotos.put(Pset.getTitle() + "|" + foto.getId(), foto.getId()); 
+                            }
                         
                     }
 
@@ -806,6 +836,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
+            remoteLastModifiedDate = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
@@ -820,33 +851,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Message("Retrieving Local Photo List");
                 LocalPhotoList(Directory, 0, Directory);
 
-                // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
-                remotephotos.forEach((k, v)
-                        -> {
-
-                    //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
-                    if (localphotos.get(k) == null && (sync == 1 || sync == 2)) {
-                        // i'll delete the file only if the photo album is present in local albums but not the photo
-                        // or sync option is fullscreen
-                        //cancello il file solo se l'album è presente tra quelli locali ma la foto non esiste più
-                        //oppure è attivo il fullsync
-
-                        if (localalbums.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
-                            try {
-                                // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
-                                // in this case we block the online operation
-                                if (!StopProcess) {
-                                    //Delete photos that are no longer present local
-                                    Message("Deleting file " + k + " from the cloud");
-                                    flickr.getPhotosInterface().delete(v);
-                                }
-                            } catch (FlickrException ex) {
-
-                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
-                            }
-                        }
-                    }
-                });
+ 
 
                 //Faccio L'elenco delle cartelle e foto locali e per ogni file se non lo trovo
                 // Faccio l'upload delle foto se non sono già presenti su flickr
@@ -861,7 +866,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                         } else {
                             // if I find the same remote file but the dataTag was different I'll reUpload the file
-                            //    File f=new File(v);
+                             /*   File f=new File(v);
+                                String data=sdf.format(f.lastModified());
+                                if ()*/
                             //       System.out.println("File "+v+" already present to the cloud");
 
                         }
@@ -891,7 +898,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         if (!StopProcess) {
 
                             Message("Uploading file " + v + " to the cloud " + count[0] + " of " + numeroFoto);
-                            uploadfile(v, k.substring(k.lastIndexOf("|") + 1), k.substring(0, k.lastIndexOf("|")));
+                            uploadfile(v, makeSafeFilename(k.substring(k.lastIndexOf("|")+1)), k.substring(0, k.lastIndexOf("|")));
                             //La funzione di upload si occuperà del controllo e la gestione degli album
                         }
                         if (GraphicsOn) {
@@ -906,6 +913,36 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         Message("Error uploading file:" + v + "   ->   " + ex.getMessage());
                     }
 
+                });
+                
+                
+                
+                               // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
+                remotephotos.forEach((k, v)
+                        -> {
+
+                    //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
+                    if (localphotos.get(k) == null && (sync == 1 || sync == 2)) {
+                        // i'll delete the file only if the photo album is present in local albums but not the photo
+                        // or sync option is fullscreen
+                        //cancello il file solo se l'album è presente tra quelli locali ma la foto non esiste più
+                        //oppure è attivo il fullsync
+
+                        if (localalbums.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
+                            try {
+                                // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
+                                // in this case we block the online operation
+                                if (!StopProcess) {
+                                    //Delete photos that are no longer present local
+                                    Message("Deleting file " + k + " from the cloud");
+                                    flickr.getPhotosInterface().delete(v);
+                                }
+                            } catch (FlickrException ex) {
+
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                            }
+                        }
+                    }
                 });
 
             } catch (IOException ex) {
@@ -972,17 +1009,20 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             if (VerifyExtension(file.getCanonicalPath())) {
                                 localalbums.put("root", "ok");
                                 // if indentamento is 0 means that photos are on the root folder so name of the remote album will be root
-                                localphotos.put("root" + "|" + makeSafeFilename(file.getName()), file.getCanonicalPath());
+                                //localphotos.put("root" + "|" + makeSafeFilename(file.getName()), file.getCanonicalPath());
+                                localphotos.put("root" + "|" + file.getCanonicalPath().substring(Directory.length()), file.getCanonicalPath());
                             }
                         } else {
                             if (VerifyExtension(file.getCanonicalPath())) {
+                                //localalbums.put(makeSafeFilename(DirRiferimento.substring(Directory.length())), "ok");
                                 localalbums.put(makeSafeFilename(DirRiferimento.substring(Directory.length())), "ok");
                                 // if indentamento is > 1 means there are local sub folders other than the first
                                 // so remote album is the name of the first subfolder and the remote photo name is
                                 // name of subfolders plus file name
                                 // Se l'indentamento è maggiore di uno il nome album è quello della prima cartella e il mome file è l'insieme
                                 // del nome delle cartelle successive e il nome file
-                                localphotos.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + makeSafeFilename(file.getCanonicalPath().substring(DirRiferimento.length())), file.getCanonicalPath());
+                                //localphotos.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + makeSafeFilename(file.getCanonicalPath().substring(DirRiferimento.length())), file.getCanonicalPath());
+                                localphotos.put(makeSafeFilename(DirRiferimento.substring(Directory.length())) + "|" + file.getCanonicalPath().substring(Directory.length()), file.getCanonicalPath());
                             }
                         }
 
@@ -1094,6 +1134,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JButton ButtonSave;
     private javax.swing.JButton ButtonStop;
     private javax.swing.JButton ButtonUpload;
+    private javax.swing.JCheckBox CheckBoxDate;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
     private javax.swing.JLabel LabelPhotoDirectory;

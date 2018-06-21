@@ -50,25 +50,25 @@
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="TextFieldPhotoDirectory" alignment="0" pref="530" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="CheckBoxDate" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="6" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="TextFieldPhotoDirectory" alignment="0" max="32767" attributes="0"/>
                                   <Component id="TextFieldApiKey" alignment="0" max="32767" attributes="0"/>
                                   <Component id="TextFieldSharedSecret" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="LabelUser" alignment="0" min="-2" pref="448" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="LabelUser" min="-2" pref="448" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
+                      <EmptySpace pref="43" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
-                              <Component id="ButtonSave" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="ButtonDeleteCredentials" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ButtonChooseDirectory" linkSize="2" alignment="1" min="-2" pref="121" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                          <Component id="ButtonDeleteCredentials" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="ButtonChooseDirectory" linkSize="2" alignment="1" min="-2" pref="121" max="-2" attributes="0"/>
+                          <Component id="ButtonSave" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                   </Group>
@@ -92,7 +92,7 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="LabelSyncDescription" min="-2" pref="511" max="-2" attributes="0"/>
+                      <Component id="LabelSyncDescription" min="-2" pref="692" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -124,11 +124,12 @@
                   <Component id="LabelPhotoDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ButtonChooseDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+              <Component id="CheckBoxDate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="3" pref="3" max="-2" attributes="0"/>
-                      <Component id="LabelSyncDescription" min="-2" pref="77" max="-2" attributes="0"/>
+                      <Component id="LabelSyncDescription" min="-2" pref="80" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="ButtonUpload" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -307,6 +308,14 @@
         <Property name="text" type="java.lang.String" value="SyncDescription"/>
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="CheckBoxDate">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="If Checked Program analize the File&apos;s last modified date to choise to reupload or not a photo, otherwise the photo name is the unique check"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CheckBoxDateActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
