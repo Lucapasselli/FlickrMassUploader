@@ -125,6 +125,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         ComboBoxSyncType.setSelectedIndex(sync);
         String version = this.getClass().getPackage().getImplementationVersion();
+        CheckBoxRestore.setVisible(false);
+        ButtonRestore.setVisible(false);
         Message("Version : "+version);
 
     }
@@ -159,6 +161,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelStartTime = new javax.swing.JLabel();
         LabelTimeRemaining = new javax.swing.JLabel();
         LabelSyncDescription = new javax.swing.JLabel();
+        ButtonRestore = new javax.swing.JButton();
+        CheckBoxRestore = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -238,6 +242,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncDescription.setText("SyncDescription");
         LabelSyncDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
+        ButtonRestore.setText("Restore");
+        ButtonRestore.setEnabled(false);
+
+        CheckBoxRestore.setText("Enable Restore");
+        CheckBoxRestore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CheckBoxRestoreActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -251,7 +265,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(59, 59, 59)
                                 .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(ButtonUpload)
@@ -260,9 +273,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addGap(80, 80, 80))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(TextFieldPhotoDirectory)
@@ -270,30 +285,30 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(TextFieldSharedSecret)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 0, Short.MAX_VALUE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 169, Short.MAX_VALUE)
+                                        .addGap(0, 62, Short.MAX_VALUE)))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(17, 17, 17))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(LabelStartTime)
-                                    .addComponent(LabelTimeRemaining))))
+                            .addComponent(LabelStartTime)
+                            .addComponent(LabelTimeRemaining))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 274, Short.MAX_VALUE)
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 692, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addGap(96, 96, 96)
+                        .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(ButtonRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
+                        .addGap(17, 17, 17))))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ButtonChooseDirectory, ButtonDeleteCredentials, ButtonSave});
@@ -322,31 +337,33 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(9, 9, 9)
+                                .addComponent(CheckBoxRestore)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ButtonRestore)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ButtonUpload)
-                            .addComponent(ButtonRequestToken))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addComponent(ButtonRequestToken)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(LabelSyncType)
                             .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(26, 26, 26)))
+                        .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(LabelStartTime)
-                            .addGap(22, 22, 22))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(LabelTimeRemaining))))
-                .addContainerGap(26, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(LabelStartTime)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(LabelTimeRemaining))
+                    .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         pack();
@@ -484,10 +501,17 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     + "New photos in your computer directory will be uploaded to flickr</html>");
         } else if (ComboBoxSyncType.getSelectedIndex() == 2) {
             LabelSyncDescription.setText("<html>With FULLSYNC option online photos that are no longer present in your local dir will be deleted<br>"
-                    + "Photos not associated to a Photoset will never be deleted<br>"
                     + "New photos in your computer directory will be uploaded to flickr</html>");
         }
     }//GEN-LAST:event_ComboBoxSyncTypeActionPerformed
+
+    private void CheckBoxRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckBoxRestoreActionPerformed
+        // TODO add your handling code here:
+        if (CheckBoxRestore.isSelected())
+            {
+                ButtonRestore.setEnabled(true);
+            }else ButtonRestore.setEnabled(false);
+    }//GEN-LAST:event_CheckBoxRestoreActionPerformed
 
     /**
      * @param args the command line arguments
@@ -746,6 +770,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     //Set<String> extras = new HashSet<String>(Extras.ALL_EXTRAS);
                     //extras.add("TAGS");
                     PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
+                    
                     //PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, 100000, 1);
 
                     for (int i = 0; i < photos.size(); i++) {
@@ -756,7 +781,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         //foto is the selected photo
                         Photo foto = (Photo) photos.get(i);
                         //remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
-                        
+          
                         Collection<Tag> tags=photoI.getPhoto(foto.getId()).getTags();
                         String Date="";
                         String Filename="";
@@ -788,6 +813,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                remotephotos.put(Pset.getTitle() + "|" + foto.getId(), foto.getId()); 
                             }
                         
+                    }
+                    
+                    
+                    PhotoList photosNoAlbum = photoI.getNotInSet(100000, 1);
+                
+                    for (int i = 0; i < photosNoAlbum.size(); i++) {
+                        Photo foto = (Photo) photosNoAlbum.get(i);
+                        remotephotos.put(foto.getTitle() + "|" + foto.getId(), foto.getId());
+                        Message(foto.getTitle());
                     }
 
                 }
@@ -1134,9 +1168,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JButton ButtonChooseDirectory;
     private javax.swing.JButton ButtonDeleteCredentials;
     private javax.swing.JButton ButtonRequestToken;
+    private javax.swing.JButton ButtonRestore;
     private javax.swing.JButton ButtonSave;
     private javax.swing.JButton ButtonStop;
     private javax.swing.JButton ButtonUpload;
+    private javax.swing.JCheckBox CheckBoxRestore;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
     private javax.swing.JLabel LabelPhotoDirectory;
