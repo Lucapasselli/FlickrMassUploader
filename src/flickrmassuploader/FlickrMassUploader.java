@@ -79,6 +79,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> remotephotos;
     static Map<String, String> remotealbums;
     static Map<String, String> remoteLastModifiedDate;
+    static Map<String, String> remotePhotosToDelete;
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static backup Backup;
@@ -158,7 +159,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelStartTime = new javax.swing.JLabel();
         LabelTimeRemaining = new javax.swing.JLabel();
         LabelSyncDescription = new javax.swing.JLabel();
-        CheckBoxDate = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -238,13 +238,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncDescription.setText("SyncDescription");
         LabelSyncDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
-        CheckBoxDate.setText("If Checked Program analize the File's last modified date to choise to reupload or not a photo, otherwise the photo name is the unique check");
-        CheckBoxDate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CheckBoxDateActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -272,16 +265,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(CheckBoxDate)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE))
                                     .addComponent(TextFieldPhotoDirectory)
                                     .addComponent(TextFieldApiKey)
                                     .addComponent(TextFieldSharedSecret)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(0, 0, Short.MAX_VALUE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 169, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -301,7 +291,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(LabelTimeRemaining))))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 274, Short.MAX_VALUE)
                         .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 692, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
         );
@@ -329,9 +319,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LabelPhotoDirectory)
                     .addComponent(ButtonChooseDirectory))
-                .addGap(5, 5, 5)
-                .addComponent(CheckBoxDate)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -500,10 +488,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     + "New photos in your computer directory will be uploaded to flickr</html>");
         }
     }//GEN-LAST:event_ComboBoxSyncTypeActionPerformed
-
-    private void CheckBoxDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckBoxDateActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_CheckBoxDateActionPerformed
 
     /**
      * @param args the command line arguments
@@ -837,6 +821,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
+            remotePhotosToDelete = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
@@ -866,9 +851,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                         } else {
                             // if I find the same remote file but the dataTag was different I'll reUpload the file
-                             /*   File f=new File(v);
+                                File f=new File(v);
                                 String data=sdf.format(f.lastModified());
-                                if ()*/
+                                if (remoteLastModifiedDate.get(k).equalsIgnoreCase(data)){
+                                    //If the date is the same i'll di nothing
+                                }
+                                else
+                                    {
+                                        remotePhotosToDelete.put(k, remotephotos.get(k));
+                                        phototoupload.put(k, v);
+                                    }
                             //       System.out.println("File "+v+" already present to the cloud");
 
                         }
@@ -916,8 +908,19 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 });
                 
                 
-                
-                               // albumremoti.forEach((k,v) -> Message("keyR: "+k+" valueR:"+v));
+                //Delete Photos that I had reuploaded becouse LastModified date was different that the original
+                                remotePhotosToDelete.forEach((k, v)
+                        -> {
+                                    try {
+                                    Message("Deleting file " + k + " from the cloud");
+                                    flickr.getPhotosInterface().delete(v); 
+                                     } catch (FlickrException ex) {
+
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                            }
+                                });
+
+                //Delete photos if Sync option is active
                 remotephotos.forEach((k, v)
                         -> {
 
@@ -1134,7 +1137,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JButton ButtonSave;
     private javax.swing.JButton ButtonStop;
     private javax.swing.JButton ButtonUpload;
-    private javax.swing.JCheckBox CheckBoxDate;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
     private javax.swing.JLabel LabelPhotoDirectory;
