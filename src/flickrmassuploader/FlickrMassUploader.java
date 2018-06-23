@@ -87,7 +87,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static backup Backup;
     static restore Restore;
     static Thread process;
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
     static boolean CheckDate=false;
@@ -743,15 +743,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         return st;
     }
 
-    public void downloadfile(String photoID,String FileName,String date)throws Exception{
+    public void downloadfile(String photoID,File newFile)throws Exception{
             if (!StopProcess) {
-                File newFile = new File(FileName);
-                // if fileName Exist i'll do nothing
-                if (!newFile.exists()||(!sdf.format(newFile.lastModified()).equalsIgnoreCase(date)&&date!=null)){
+
                 PhotosInterface photoI=flickr.getPhotosInterface();
                 Photo p = photoI.getPhoto(photoID);
-                Message("Downloading " + FileName);
-                //BufferedInputStream inStream = new BufferedInputStream(photoInt.getImageAsStream(p, Size.LARGE));
+                Message("Downloading " + newFile.getName());
                 BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.ORIGINAL));
                 FileOutputStream fos = new FileOutputStream(newFile);
                 int read;
@@ -761,8 +758,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 fos.flush();
                 fos.close();
                 inStream.close();
-                if (date!=null&&!date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(date).getTime());
-            }
+
           }      
             
     }
@@ -929,7 +925,24 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             remotephotos.forEach((k, v)
                 -> {
                 try {
-                    downloadfile(v,Directory+k.substring(k.lastIndexOf("|")+1),remoteLastModifiedDate.get(k));
+                 String Date= remoteLastModifiedDate.get(k);
+                 String filename=Directory+k.substring(k.lastIndexOf("|")+1);
+                File newFile = new File(filename);
+                // This command create subdirs that not exists in localpath
+                new File(newFile.getParent()).mkdirs();
+                // if fileName don't Exist or LastModified Date was different the file was downloaded
+                if (!newFile.exists()||(!sdf.format(newFile.lastModified()).equalsIgnoreCase(Date)&&Date!=null)){
+                    
+                    
+                    downloadfile(v,newFile);
+                    if (Date!=null&&!Date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(Date).getTime());
+                    
+                   } 
+                    
+                    
+                    
+                    
+                    
                     } catch (FlickrException ex) {
                         Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage());
                     } catch (Exception ex) {
@@ -1004,7 +1017,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             // if I find the same remote file but the dataTag was different I'll reUpload the file
                                 File f=new File(v);
                                 String data=sdf.format(f.lastModified());
-                                if (remoteLastModifiedDate.get(k).equalsIgnoreCase(data)){
+                                if (data.equalsIgnoreCase(remoteLastModifiedDate.get(k))){
                                     //If the date is the same i'll di nothing
                                 }
                                 else
