@@ -16,6 +16,7 @@ import com.flickr4java.flickr.photos.Extras;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.PhotosInterface;
+import com.flickr4java.flickr.photos.Size;
 import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.tags.Tag;
@@ -24,6 +25,7 @@ import com.flickr4java.flickr.uploader.Uploader;
 import static flickrmassuploader.FlickrMassUploader.Nsid;
 import static flickrmassuploader.FlickrMassUploader.auth;
 import java.awt.Desktop;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -83,6 +85,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static backup Backup;
+    static restore Restore;
     static Thread process;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
@@ -125,8 +128,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         ComboBoxSyncType.setSelectedIndex(sync);
         String version = this.getClass().getPackage().getImplementationVersion();
-        CheckBoxRestore.setVisible(false);
-        ButtonRestore.setVisible(false);
+    //    CheckBoxRestore.setVisible(false);
+    //    ButtonRestore.setVisible(false);
+        LabelForceStop.setVisible(false);
+        ButtonForceStop.setVisible(false);
         Message("Version : "+version);
 
     }
@@ -163,6 +168,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncDescription = new javax.swing.JLabel();
         ButtonRestore = new javax.swing.JButton();
         CheckBoxRestore = new javax.swing.JCheckBox();
+        ButtonForceStop = new javax.swing.JButton();
+        LabelForceStop = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -244,6 +251,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         ButtonRestore.setText("Restore");
         ButtonRestore.setEnabled(false);
+        ButtonRestore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonRestoreActionPerformed(evt);
+            }
+        });
 
         CheckBoxRestore.setText("Enable Restore");
         CheckBoxRestore.addActionListener(new java.awt.event.ActionListener() {
@@ -252,6 +264,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             }
         });
 
+        ButtonForceStop.setBackground(new java.awt.Color(255, 0, 0));
+        ButtonForceStop.setText("Force Stop");
+        ButtonForceStop.setEnabled(false);
+        ButtonForceStop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonForceStopActionPerformed(evt);
+            }
+        });
+
+        LabelForceStop.setForeground(new java.awt.Color(255, 0, 51));
+        LabelForceStop.setText("Wait until current process finish or press Force Stop to immediately kill the process!");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -259,9 +283,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -292,13 +313,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(17, 17, 17))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(LabelStartTime)
-                            .addComponent(LabelTimeRemaining))
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(96, 96, 96)
                         .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -308,7 +322,25 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(ButtonRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
-                        .addGap(17, 17, 17))))
+                        .addGap(17, 17, 17))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(ProgressBarBackup, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
+                            .addComponent(LabelForceStop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(LabelStartTime)
+                                    .addComponent(LabelTimeRemaining))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(ButtonForceStop, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())))))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ButtonChooseDirectory, ButtonDeleteCredentials, ButtonSave});
@@ -363,7 +395,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(LabelTimeRemaining))
                     .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 2, Short.MAX_VALUE)
+                        .addComponent(ButtonForceStop))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(LabelForceStop)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         pack();
@@ -472,20 +511,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private void ButtonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonStopActionPerformed
         // TODO add your handling code here:
         StopProcess = true;
-
-        //Ripristina Interfaccia finita l'esecuzione del software
-        while (process.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        ButtonUpload.setEnabled(true);
-        ButtonDeleteCredentials.setEnabled(true);
+       
         ButtonStop.setEnabled(false);
-        ButtonStop.setVisible(false);
-        JOptionPane.showMessageDialog(null, "BACKUP STOPPED BY USER!!!");
+            waitProcess waitprocess = new waitProcess();
+            Thread processo = new Thread(waitprocess);
+            processo.start();
 
     }//GEN-LAST:event_ButtonStopActionPerformed
 
@@ -512,6 +542,25 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 ButtonRestore.setEnabled(true);
             }else ButtonRestore.setEnabled(false);
     }//GEN-LAST:event_CheckBoxRestoreActionPerformed
+
+    private void ButtonForceStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonForceStopActionPerformed
+        // TODO add your handling code here:
+        process.stop();
+        Message("Forced Backup Interruption");
+    }//GEN-LAST:event_ButtonForceStopActionPerformed
+
+    private void ButtonRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonRestoreActionPerformed
+        // TODO add your handling code here:
+        Directory = TextFieldPhotoDirectory.getText();
+        StopProcess = false;
+        boolean connectionOK;
+        connectionOK = auth();
+        if (connectionOK) {
+            Restore = new restore();
+            process = new Thread(Restore);
+            process.start();
+        }
+    }//GEN-LAST:event_ButtonRestoreActionPerformed
 
     /**
      * @param args the command line arguments
@@ -694,6 +743,30 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         return st;
     }
 
+    public void downloadfile(String photoID,String FileName,String date)throws Exception{
+            if (!StopProcess) {
+                File newFile = new File(FileName);
+                // if fileName Exist i'll do nothing
+                if (!newFile.exists()||(!sdf.format(newFile.lastModified()).equalsIgnoreCase(date)&&date!=null)){
+                PhotosInterface photoI=flickr.getPhotosInterface();
+                Photo p = photoI.getPhoto(photoID);
+                Message("Downloading " + FileName);
+                //BufferedInputStream inStream = new BufferedInputStream(photoInt.getImageAsStream(p, Size.LARGE));
+                BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.ORIGINAL));
+                FileOutputStream fos = new FileOutputStream(newFile);
+                int read;
+                while ((read = inStream.read()) != -1) {
+                    fos.write(read);
+                }
+                fos.flush();
+                fos.close();
+                inStream.close();
+                if (date!=null&&!date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(date).getTime());
+            }
+          }      
+            
+    }
+    
     public String uploadfile(String filename, String TitoloFoto, String Album) throws Exception {
         if (!StopProcess) {
             String photoId;
@@ -709,10 +782,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             if (uploadableFile) {
                 Uploader uploader = flickr.getUploader();
                 File f = new File(filename);
+                long fileSizeMB = f.length()/1024;
                 List<String> tags = new ArrayList<String>();
                 tags.add("OrigFileName:=\"" + filename.substring(Directory.length()) + "\"");
                 tags.add("DateLastModified:=\""+sdf.format(f.lastModified())+"\"");
                 metaData.setTags(tags);
+                    Message ("File Size: "+String.valueOf(fileSizeMB)+" KB");
                     photoId = uploader.upload(f, metaData);
                     Message(" File : " + filename + " uploaded: photoId = " + photoId);
                 
@@ -821,7 +896,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     for (int i = 0; i < photosNoAlbum.size(); i++) {
                         Photo foto = (Photo) photosNoAlbum.get(i);
                         remotephotos.put(foto.getTitle() + "|" + foto.getId(), foto.getId());
-                        Message(foto.getTitle());
+                        //Message(foto.getTitle());
                     }
 
                 }
@@ -831,6 +906,48 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         }
     }
+    
+    public void RestoreYourFiles() {
+
+        // if button stop is pressed StopProcess become true and we have to termiate all tasks
+        if (!StopProcess) {
+            Long InitialTime = System.currentTimeMillis();
+            LabelTimeRemaining.setText("Time Remaining:");
+            remotephotos = new HashMap<>();
+            remotealbums = new HashMap<>();
+            phototoupload = new HashMap<>();
+            localalbums = new HashMap<>();
+            localphotos = new HashMap<>();
+            remoteLastModifiedDate = new HashMap<>();
+            remotePhotosToDelete = new HashMap<>();
+
+            //authentication    
+            RequestContext rc = RequestContext.getRequestContext();
+            rc.setAuth(auth);
+            Message("Retrieving Remote Photo List");
+            RemotePhotoList();
+            remotephotos.forEach((k, v)
+                -> {
+                try {
+                    downloadfile(v,Directory+k.substring(k.lastIndexOf("|")+1),remoteLastModifiedDate.get(k));
+                    } catch (FlickrException ex) {
+                        Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage());
+                    } catch (Exception ex) {
+                        Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
+                    }
+                });
+                
+
+
+            
+    }
+        }
+        
+    
+    
+    
+    
+    
 
     public void BackupYourFiles() {
 
@@ -1130,7 +1247,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     public boolean VerifyExtension(String filename) {
         //Return true only if the extension of the file is supported
         boolean fileok = false;
-        String[] SupportedExtensions = new String[]{"jpg", "jpeg", "png", "avi", "mpeg"};
+        String[] SupportedExtensions = new String[]{"jpg", "jpeg", "png", "avi", "mpeg", "mp4"};
         for (int i = 0; i < SupportedExtensions.length; i++) {
             String suffix = makeSafeFilename(filename).substring(makeSafeFilename(filename).lastIndexOf('.') + 1);
             if (suffix.equalsIgnoreCase(SupportedExtensions[i])) {
@@ -1146,6 +1263,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         public void run() {
 
             //Grayout alla buttons eccept the Stop thread Button
+            ButtonRestore.setEnabled(false);
             ButtonUpload.setEnabled(false);
             ButtonDeleteCredentials.setEnabled(false);
             ButtonStop.setEnabled(true);
@@ -1159,6 +1277,64 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             ButtonDeleteCredentials.setEnabled(true);
             ButtonStop.setEnabled(false);
             ButtonStop.setVisible(false);
+            if (CheckBoxRestore.isSelected()) ButtonRestore.setEnabled(true);
+
+        }
+
+    }
+    
+        public class restore implements Runnable {
+
+        public void run() {
+
+            //Grayout alla buttons eccept the Stop thread Button
+            ButtonRestore.setEnabled(false);
+            ButtonUpload.setEnabled(false);
+            ButtonDeleteCredentials.setEnabled(false);
+            ButtonStop.setEnabled(true);
+            ButtonStop.setVisible(true);
+
+            RestoreYourFiles();
+            //BACKUP YOU FILES FUCTION CLONE        
+
+            //Restore graphics interface after backup completed
+            ButtonUpload.setEnabled(true);
+            ButtonDeleteCredentials.setEnabled(true);
+            ButtonStop.setEnabled(false);
+            ButtonStop.setVisible(false);
+            if (CheckBoxRestore.isSelected()) ButtonRestore.setEnabled(true);
+
+        }
+
+    }
+    
+    
+    
+        public class waitProcess implements Runnable {
+
+        public void run() {
+
+        ButtonForceStop.setVisible(true);
+        LabelForceStop.setVisible(true);
+        ButtonForceStop.setEnabled(true);
+
+        //Ripristina Interfaccia finita l'esecuzione del software
+        while (process.isAlive()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        ButtonUpload.setEnabled(true);
+        ButtonDeleteCredentials.setEnabled(true);
+        ButtonStop.setEnabled(false);
+        ButtonStop.setVisible(false);
+        ButtonForceStop.setVisible(false);
+        ButtonForceStop.setEnabled(false);
+        if (CheckBoxRestore.isSelected()) ButtonRestore.setEnabled(true);
+        LabelForceStop.setVisible(false);
+        JOptionPane.showMessageDialog(null, "BACKUP OR RESTORE STOPPED BY USER!!!");
 
         }
 
@@ -1167,6 +1343,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ButtonChooseDirectory;
     private javax.swing.JButton ButtonDeleteCredentials;
+    private javax.swing.JButton ButtonForceStop;
     private javax.swing.JButton ButtonRequestToken;
     private javax.swing.JButton ButtonRestore;
     private javax.swing.JButton ButtonSave;
@@ -1175,6 +1352,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JCheckBox CheckBoxRestore;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
+    private javax.swing.JLabel LabelForceStop;
     private javax.swing.JLabel LabelPhotoDirectory;
     private javax.swing.JLabel LabelSharedSecret;
     private javax.swing.JLabel LabelStartTime;
