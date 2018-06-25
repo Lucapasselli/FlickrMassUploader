@@ -30,15 +30,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +57,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -84,10 +89,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> remotePhotosToDelete;
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
+    static Map<String, String> remotephotosfullpath;
     static backup Backup;
     static restore Restore;
     static Thread process;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss");
+    SimpleDateFormat sdfOLD = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
     static boolean CheckDate=false;
@@ -743,23 +750,57 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         return st;
     }
 
-    public void downloadfile(String photoID,File newFile)throws Exception{
+    public static void saveFile(URL url, String file) throws IOException {
+    System.out.println("opening connection");
+    InputStream in = url.openStream();
+    FileOutputStream fos = new FileOutputStream(new File(file));
+
+    System.out.println("Reading file...");
+    int length = -1;
+    byte[] buffer = new byte[1024]; // Buffer for portion of data from
+
+    // Connection
+    while ((length = in.read(buffer)) > -1) {
+        fos.write(buffer, 0, length);
+    }
+
+    fos.close();
+    in.close();
+    System.out.println("File was downloaded");
+}
+    
+    
+    
+    public void downloadfile(String photoID,File newFile)throws Exception,FlickrException{
             if (!StopProcess) {
 
                 PhotosInterface photoI=flickr.getPhotosInterface();
                 Photo p = photoI.getPhoto(photoID);
+                
+                // if file in not a video i'll download
+                // unfortunately video download api seems to be bugged
+                File tempFile=new File(newFile.getCanonicalPath()+"_temp");
+                if (!p.getMedia().equalsIgnoreCase("video")){
                 Message("Downloading " + newFile.getName());
                 BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.ORIGINAL));
-                FileOutputStream fos = new FileOutputStream(newFile);
+                FileOutputStream fos = new FileOutputStream(tempFile);
                 int read;
                 while ((read = inStream.read()) != -1) {
+                    if (StopProcess) break;
                     fos.write(read);
                 }
                 fos.flush();
                 fos.close();
                 inStream.close();
-
+                Message("Download of " + newFile.getName()+" completed!");
+                Files.copy(tempFile.toPath(), newFile.toPath());
+                tempFile.delete();
+                if (StopProcess) tempFile.delete();
+            } 
           }      
+
+     // url=("https://www.flickr.com/video_download.gne?id="+photoID);
+   
             
     }
     
@@ -850,6 +891,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             break;
                         }
                         //foto is the selected photo
+                       
                         Photo foto = (Photo) photos.get(i);
                         //remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
           
@@ -874,6 +916,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         if (!Filename.equalsIgnoreCase(""))
                         {
                             
+                            remotephotosfullpath.put(Pset.getTitle() + "|" + Filename, foto.getId());
                             remotephotos.put(Pset.getTitle() + "|" + Filename, foto.getId());
                             if (!Date.equalsIgnoreCase(""))
                             {
@@ -888,6 +931,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     
                     
                     PhotoList photosNoAlbum = photoI.getNotInSet(100000, 1);
+                  
                 
                     for (int i = 0; i < photosNoAlbum.size(); i++) {
                         Photo foto = (Photo) photosNoAlbum.get(i);
@@ -903,11 +947,59 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
     
+    
+    
+        public void UpdateDateTags(String PHOTOID,String DATE) {
+        // if button stop is pressed StopProcess become true and we have to termiate all tasks
+        if (!StopProcess) {
+            try {
+
+                PhotosInterface photoI=flickr.getPhotosInterface();
+                Message ("Photo:"+photoI.getPhoto(PHOTOID).getTitle()+" ID:"+PHOTOID+" with old style LastModifiedDate Format, I'll upgrade it!");
+                
+                            Collection<Tag> tags=photoI.getPhoto(PHOTOID).getTags();
+
+                        for (Tag tag : tags) {
+                            if (tag.getRaw().split(":=")[0].equalsIgnoreCase("DateLastModified")&&tag.getRaw().split(":=").length>1) 
+                            {
+                                photoI.removeTag(tag.getId());
+                                Message ("Old Tag Deleted -> "+tag.getRaw());
+
+                            }
+                            }
+                String tags1[]=new String[1];
+                tags1[0]="DateLastModified:="+DATE;
+                photoI.addTags(PHOTOID, tags1);
+                Message ("New Tag Created -> "+tags1[0]);
+
+                
+                    
+            } catch (FlickrException ex) {
+                Message("Error in tag update -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+            }
+
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public void RestoreYourFiles() {
 
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
         if (!StopProcess) {
-            Long InitialTime = System.currentTimeMillis();
+           // Long InitialTime = System.currentTimeMillis();
             LabelTimeRemaining.setText("Time Remaining:");
             remotephotos = new HashMap<>();
             remotealbums = new HashMap<>();
@@ -916,13 +1008,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             localphotos = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
             remotePhotosToDelete = new HashMap<>();
+            remotephotosfullpath = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
             rc.setAuth(auth);
             Message("Retrieving Remote Photo List");
             RemotePhotoList();
-            remotephotos.forEach((k, v)
+            remotephotosfullpath.forEach((k, v)
                 -> {
                 try {
                  String Date= remoteLastModifiedDate.get(k);
@@ -931,24 +1024,37 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 // This command create subdirs that not exists in localpath
                 new File(newFile.getParent()).mkdirs();
                 // if fileName don't Exist or LastModified Date was different the file was downloaded
-                if (!newFile.exists()||(!sdf.format(newFile.lastModified()).equalsIgnoreCase(Date)&&Date!=null)){
+                if (!newFile.exists()){
                     
                     
                     downloadfile(v,newFile);
                     if (Date!=null&&!Date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(Date).getTime());
                     
                    } 
-                    
-                    
-                    
-                    
-                    
+
                     } catch (FlickrException ex) {
-                        Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage());
+                        Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
+                       // Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
                     } catch (Exception ex) {
                         Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
                     }
                 });
+            
+            if (StopProcess) {
+            Message("Restore Stopped by User!");
+            Message("-------------------------------------------------");
+            if (GraphicsOn) {
+                LabelTimeRemaining.setText("RESTORE STOPPED BY USER!!!");
+
+            }
+        } else {
+            Message("Restore Finished!");
+            Message("-----------------------------------------------");
+            if (GraphicsOn) {
+                LabelTimeRemaining.setText("RESTORE FINISHED");
+                JOptionPane.showMessageDialog(null, "RESTORE FINISHED!!!");
+            }
+        }
                 
 
 
@@ -957,7 +1063,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         
     
-    
+    private static String getOriginalVideoUrl(Flickr flickr, String photoId) throws IOException, FlickrException {
+	String siteUrl = null;
+	for (Size size : (Collection<Size>) flickr.getPhotosInterface().getSizes(photoId, true)) {
+            System.out.println(size.getSource());
+                if (size.getSource().contains("/site/orig"))
+			siteUrl = size.getSource();
+	}
+		return siteUrl;
+}
     
     
     
@@ -1022,11 +1136,21 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 }
                                 else
                                     {
-                                        remotePhotosToDelete.put(k, remotephotos.get(k));
-                                        phototoupload.put(k, v);
-                                    }
-                            //       System.out.println("File "+v+" already present to the cloud");
-
+                                        String dataOLD=sdfOLD.format(f.lastModified());
+                                        if (dataOLD.equalsIgnoreCase(remoteLastModifiedDate.get(k)))
+                                        {
+                                            //If the date is the same in the old format mode i'll update tags
+                                            UpdateDateTags(remotephotos.get(k),data);
+                                            
+                                        }
+                                        else
+                                        {
+                                            remotePhotosToDelete.put(k, remotephotos.get(k));
+                                            phototoupload.put(k, v);
+                                        }
+                        
+                            
+                                                }
                         }
                     });
                 }
@@ -1276,6 +1400,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         public void run() {
 
             //Grayout alla buttons eccept the Stop thread Button
+            CheckBoxRestore.setEnabled(false);
             ButtonRestore.setEnabled(false);
             ButtonUpload.setEnabled(false);
             ButtonDeleteCredentials.setEnabled(false);
@@ -1286,6 +1411,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             //BACKUP YOU FILES FUCTION CLONE        
 
             //Restore graphics interface after backup completed
+            CheckBoxRestore.setEnabled(true);
             ButtonUpload.setEnabled(true);
             ButtonDeleteCredentials.setEnabled(true);
             ButtonStop.setEnabled(false);
@@ -1301,6 +1427,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         public void run() {
 
             //Grayout alla buttons eccept the Stop thread Button
+            CheckBoxRestore.setEnabled(false);
             ButtonRestore.setEnabled(false);
             ButtonUpload.setEnabled(false);
             ButtonDeleteCredentials.setEnabled(false);
@@ -1311,6 +1438,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             //BACKUP YOU FILES FUCTION CLONE        
 
             //Restore graphics interface after backup completed
+            CheckBoxRestore.setEnabled(true);
             ButtonUpload.setEnabled(true);
             ButtonDeleteCredentials.setEnabled(true);
             ButtonStop.setEnabled(false);
@@ -1345,6 +1473,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         ButtonStop.setVisible(false);
         ButtonForceStop.setVisible(false);
         ButtonForceStop.setEnabled(false);
+        CheckBoxRestore.setEnabled(true);
         if (CheckBoxRestore.isSelected()) ButtonRestore.setEnabled(true);
         LabelForceStop.setVisible(false);
         JOptionPane.showMessageDialog(null, "BACKUP OR RESTORE STOPPED BY USER!!!");
