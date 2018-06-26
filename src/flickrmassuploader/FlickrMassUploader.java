@@ -22,6 +22,7 @@ import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.tags.Tag;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
+import com.sun.javafx.PlatformUtil;
 import static flickrmassuploader.FlickrMassUploader.Nsid;
 import static flickrmassuploader.FlickrMassUploader.auth;
 import java.awt.Desktop;
@@ -915,7 +916,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         
                         if (!Filename.equalsIgnoreCase(""))
                         {
-                            
+                            Filename=ReturnFullFileNameOSDepending(Filename);
                             remotephotosfullpath.put(Pset.getTitle() + "|" + Filename, foto.getId());
                             remotephotos.put(Pset.getTitle() + "|" + Filename, foto.getId());
                             if (!Date.equalsIgnoreCase(""))
@@ -1061,6 +1062,21 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             
     }
         }
+    
+    
+      public String ReturnFullFileNameOSDepending(String FILENAME)  {
+            String NewName="";
+            if (PlatformUtil.isWindows()){
+                NewName=FILENAME.replaceAll("/", "\\\\");
+            }
+            else
+            {
+                NewName=FILENAME.replaceAll("\\", "/");
+            }
+            
+            
+		return NewName;
+}
         
     
     private static String getOriginalVideoUrl(Flickr flickr, String photoId) throws IOException, FlickrException {
@@ -1100,6 +1116,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             localphotos = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
             remotePhotosToDelete = new HashMap<>();
+            remotephotosfullpath = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
