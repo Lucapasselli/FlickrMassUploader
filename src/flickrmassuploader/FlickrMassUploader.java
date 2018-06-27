@@ -84,13 +84,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static String Directory = "";
     static String ConfirmationCode = "";
     static Map<String, String> localphotos;
-    static Map<String, String> remotephotos;
+//    static Map<String, String> remotephotos;
     static Map<String, String> remotealbums;
     static Map<String, String> remoteLastModifiedDate;
     static Map<String, String> remotePhotosToDelete;
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
-    static Map<String, String> remotephotosfullpath;
+//    static Map<String, String> remotephotosfullpath;
+    static Map<String, String> remotephotoswithdata;
+    static Map<String, String> remotephotoswithoutdata;
     static backup Backup;
     static restore Restore;
     static Thread process;
@@ -781,6 +783,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 // if file in not a video i'll download
                 // unfortunately video download api seems to be bugged
                 File tempFile=new File(newFile.getCanonicalPath()+"_temp");
+                //System.out.println(p.getLargeUrl());
                 if (!p.getMedia().equalsIgnoreCase("video")){
                 Message("Downloading " + newFile.getName());
                 BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.ORIGINAL));
@@ -821,18 +824,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Uploader uploader = flickr.getUploader();
                 File f = new File(filename);
                 long fileSizeMB = f.length()/1024;
-                List<String> tags = new ArrayList<String>();
-                tags.add("OrigFileName:=\"" + filename.substring(Directory.length()) + "\"");
-                tags.add("DateLastModified:=\""+sdf.format(f.lastModified())+"\"");
-                metaData.setTags(tags);
+                metaData.setDescription("OrigFileName:=" + filename.substring(Directory.length()) + "\n"+"DateLastModified:="+sdf.format(f.lastModified())+"\n");
                     Message ("File Size: "+String.valueOf(fileSizeMB)+" KB");
                     photoId = uploader.upload(f, metaData);
                     Message(" File : " + filename + " uploaded: photoId = " + photoId);
-                
-                    
-               /* PhotosInterface photoI=flickr.getPhotosInterface();
-                photoI.setMeta(photoId, TitoloFoto, "DateLastModified=\""+sdf.format(f.lastModified())+"\"");*/
-
 
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
 
@@ -858,10 +853,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     public void RemotePhotoList() {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
         if (!StopProcess) {
+
             try {
 
                 PhotosInterface photoI=flickr.getPhotosInterface();
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
+                
                 //create an itarator to list albums
                 //sets is the list of albums
                 Iterator sets = psi.getList(Nsid).getPhotosets().iterator();
@@ -874,73 +871,87 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     }
                     //Pset it's the selected album
                     Photoset Pset = (Photoset) sets.next();
+                    String Album=Pset.getTitle();
+                   // Message("Retrieving Album "+Album+" photoList");
 
 
                     remotealbums.put(Pset.getTitle(), Pset.getId());
                    // remoteLastModifiedDate
                     
                     //photos is the list of photos on selected album
-                    //Set<String> extras = new HashSet<String>(Extras.ALL_EXTRAS);
-                    //extras.add("TAGS");
-                    PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
-                    
-                    //PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, 100000, 1);
+                    Set<String> extras = new HashSet<String>();
+                    extras.add("description");
+                    int photosperpage=500;
 
+                    
+                    //PhotoList photos = psi.getPhotos(Pset.getId(), 100000, 1);
+                    
+                    PhotoList photos = psi.getPhotos(Pset.getId(), extras, 0, photosperpage, 1);
+                    int pages=photos.getPages();                
+                    for (int x = 0; x < pages; x++) {
+                        if (x>0){
+                          photos = psi.getPhotos(Pset.getId(), extras, 0, photosperpage, x+1);  
+                        }
                     for (int i = 0; i < photos.size(); i++) {
                         // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                         if (StopProcess) {
                             break;
                         }
                         //foto is the selected photo
-                       
+                        
                         Photo foto = (Photo) photos.get(i);
-                        //remotephotos.put(Pset.getTitle() + "|" + foto.getTitle(), foto.getId());
-          
-                        Collection<Tag> tags=photoI.getPhoto(foto.getId()).getTags();
+                        String photoID=foto.getId();
                         String Date="";
                         String Filename="";
-                        for (Tag tag : tags) {
-                            if (tag.getRaw().split(":=")[0].equalsIgnoreCase("DateLastModified")&&tag.getRaw().split(":=").length>1) 
+                        String Description=foto.getDescription();
+                        if (Description!=null)
                             {
-                                //Message(tag.getRaw().split(":=")[1]);
-                                Date=tag.getRaw().split(":=")[1];
-                                //remoteLastModifiedDate.put(Pset.getTitle() + "|" + foto.getTitle(), tag.getRaw().split(":=")[1]);
+                                String lines[]=Description.split("\n");
+                                for (int y=0;y<lines.length;y++)
+                                    {
+                                         if (lines[y].split(":=")[0].equalsIgnoreCase("DateLastModified")&&lines[y].split(":=").length>1) 
+                                        {
+                                        Date=lines[y].split(":=")[1];
+                                        }
+                                        if (lines[y].split(":=")[0].equalsIgnoreCase("OrigFileName")&&lines[y].split(":=").length>1) 
+                                        {
+                                        Filename=lines[y].split(":=")[1];
+                                        Filename=ReturnFullFileNameOSDepending(Filename);
+                                        } 
+                                    }
+                                if (!Date.equalsIgnoreCase("")&&!Filename.equalsIgnoreCase(""))
+                                    {
+                                        remotephotoswithdata.put(Album + "|" + Filename, Date);
+                                        remoteLastModifiedDate.put(Album + "|" + Filename, Date);
+                                    }
+                                else
+                                    {
+                                        remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
+                                    }
                             }
-                            if (tag.getRaw().split(":=")[0].equalsIgnoreCase("OrigFileName")&&tag.getRaw().split(":=").length>1) 
+                        else
                             {
-                                //Message(tag.getRaw().split(":=")[1]);
-                                Filename=tag.getRaw().split(":=")[1];
-                                //remoteLastModifiedDate.put(Pset.getTitle() + "|" + foto.getTitle(), tag.getRaw().split(":=")[1]);
-                            }
-                        }
-                        
-                        if (!Filename.equalsIgnoreCase(""))
-                        {
-                            Filename=ReturnFullFileNameOSDepending(Filename);
-                            remotephotosfullpath.put(Pset.getTitle() + "|" + Filename, foto.getId());
-                            remotephotos.put(Pset.getTitle() + "|" + Filename, foto.getId());
-                            if (!Date.equalsIgnoreCase(""))
-                            {
-                                remoteLastModifiedDate.put(Pset.getTitle() + "|" + Filename, Date);
-                            }
-                        }else
-                            {
-                               remotephotos.put(Pset.getTitle() + "|" + foto.getId(), foto.getId()); 
+                                remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
                             }
                         
                     }
-                    
-                    
-                    PhotoList photosNoAlbum = photoI.getNotInSet(100000, 1);
-                  
-                
-                    for (int i = 0; i < photosNoAlbum.size(); i++) {
-                        Photo foto = (Photo) photosNoAlbum.get(i);
-                        remotephotos.put(foto.getTitle() + "|" + foto.getId(), foto.getId());
-                        //Message(foto.getTitle());
-                    }
+                }
 
                 }
+
+                        int photosperpage=500;
+                        PhotoList photosNoAlbum = photoI.getNotInSet(photosperpage, 1);
+                        int pages=photosNoAlbum.getPages();
+                        System.out.println(pages);
+                        for (int x = 0; x < pages; x++) {
+                        if (x>0){
+                          photosNoAlbum = photoI.getNotInSet(photosperpage, x+1);  
+                        }
+                        for (int i = 0; i < photosNoAlbum.size(); i++) {
+                        Photo foto = (Photo) photosNoAlbum.get(i);
+                        remotephotoswithoutdata.put("NoAlbum" + "|" + foto.getId(), foto.getId());
+                    }
+                        }
             } catch (FlickrException ex) {
                 Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
             }
@@ -982,19 +993,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+       
     
     public void RestoreYourFiles() {
 
@@ -1002,25 +1001,26 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         if (!StopProcess) {
            // Long InitialTime = System.currentTimeMillis();
             LabelTimeRemaining.setText("Time Remaining:");
-            remotephotos = new HashMap<>();
             remotealbums = new HashMap<>();
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
             remotePhotosToDelete = new HashMap<>();
-            remotephotosfullpath = new HashMap<>();
+            remotephotoswithdata = new HashMap<>();
+            remotephotoswithoutdata = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
             rc.setAuth(auth);
             Message("Retrieving Remote Photo List");
             RemotePhotoList();
-            remotephotosfullpath.forEach((k, v)
+            remotephotoswithdata.forEach((k, v)
                 -> {
                 try {
-                 String Date= remoteLastModifiedDate.get(k);
-                 String filename=Directory+k.substring(k.lastIndexOf("|")+1);
+                 String filename="";
+                 String Date= remoteLastModifiedDate.get(k); 
+                 filename=Directory+k.substring(k.lastIndexOf("|")+1);
                 File newFile = new File(filename);
                 // This command create subdirs that not exists in localpath
                 new File(newFile.getParent()).mkdirs();
@@ -1033,12 +1033,46 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     
                    } 
 
-                    } catch (FlickrException ex) {
+                    } 
+
+                
+                catch (FlickrException ex) {
                         Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
                        // Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
                     } catch (Exception ex) {
                         Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
                     }
+                     
+                });
+                        remotephotoswithoutdata.forEach((k, v)
+                -> {
+                try {
+                    String filename="";
+                    String Date= remoteLastModifiedDate.get(k);
+                    String estensione=flickr.getPhotosInterface().getPhoto(v).getOriginalFormat();
+                    filename=Directory+"/NoBackupPhoto/"+k.substring(0, k.lastIndexOf("|"))+"/"+k.substring(k.lastIndexOf("|")+1)+"."+estensione;
+                    File newFile = new File(filename);
+                    // This command create subdirs that not exists in localpath
+                    new File(newFile.getParent()).mkdirs();
+                    // if fileName don't Exist or LastModified Date was different the file was downloaded
+                if (!newFile.exists()){
+                    
+                    
+                    downloadfile(v,newFile);
+                    if (Date!=null&&!Date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(Date).getTime());
+                    
+                   } 
+
+                    } 
+
+                
+                catch (FlickrException ex) {
+                        Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
+                       // Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
+                    } catch (Exception ex) {
+                        Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
+                    }
+                     
                 });
             
             if (StopProcess) {
@@ -1109,14 +1143,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             Long InitialTime = System.currentTimeMillis();
             LabelTimeRemaining.setText("Time Remaining:");
-            remotephotos = new HashMap<>();
+           // remotephotos = new HashMap<>();
             remotealbums = new HashMap<>();
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
             remotePhotosToDelete = new HashMap<>();
-            remotephotosfullpath = new HashMap<>();
+            remotephotoswithdata = new HashMap<>();
+            remotephotoswithoutdata = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
@@ -1139,7 +1174,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     localphotos.forEach((k, v)
                             -> {
 
-                        if (remotephotos.get(k) == null) {
+                        if (remotephotoswithdata.get(k) == null) {
 
                             //se non trovo il corrispondente file locale nel cloud di flickr allora lo carico sul sito
                                 phototoupload.put(k, v);
@@ -1153,21 +1188,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 }
                                 else
                                     {
-                                        String dataOLD=sdfOLD.format(f.lastModified());
-                                        if (dataOLD.equalsIgnoreCase(remoteLastModifiedDate.get(k)))
-                                        {
-                                            //If the date is the same in the old format mode i'll update tags
-                                            UpdateDateTags(remotephotos.get(k),data);
-                                            
-                                        }
-                                        else
-                                        {
-                                            remotePhotosToDelete.put(k, remotephotos.get(k));
+                                            remotePhotosToDelete.put(k, remotephotoswithdata.get(k));
                                             phototoupload.put(k, v);
-                                        }
-                        
-                            
-                                                }
+                                     }
                         }
                     });
                 }
@@ -1226,7 +1249,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 });
 
                 //Delete photos if Sync option is active
-                remotephotos.forEach((k, v)
+                remotephotoswithdata.forEach((k, v)
                         -> {
 
                     //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
@@ -1237,6 +1260,29 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         //oppure è attivo il fullsync
 
                         if (localalbums.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
+                            try {
+                                // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
+                                // in this case we block the online operation
+                                if (!StopProcess) {
+                                    //Delete photos that are no longer present local
+                                    Message("Deleting file " + k + " from the cloud");
+                                    flickr.getPhotosInterface().delete(v);
+                                }
+                            } catch (FlickrException ex) {
+
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                            }
+                        }
+                    }
+                });
+                
+                //Delete photos if Sync option is active
+                remotephotoswithoutdata.forEach((k, v)
+                        -> {
+
+                    //Se non trovo le foto tra quelle locali e il sync è attivo le cancello
+                    if (sync == 1 || sync == 2) {
+                            if (localalbums.get(k.substring(0, k.indexOf("|"))) != null || sync == 2) {
                             try {
                                 // if button stop is pressed FermaProcessi become true and we have to termiate all tasks
                                 // in this case we block the online operation
