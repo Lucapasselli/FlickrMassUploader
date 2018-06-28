@@ -921,7 +921,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     }
                                 if (!Date.equalsIgnoreCase("")&&!Filename.equalsIgnoreCase(""))
                                     {
-                                        remotephotoswithdata.put(Album + "|" + Filename, Date);
+                                        remotephotoswithdata.put(Album + "|" + Filename, photoID);
                                         remoteLastModifiedDate.put(Album + "|" + Filename, Date);
                                     }
                                 else
@@ -1100,7 +1100,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
       public String ReturnFullFileNameOSDepending(String FILENAME)  {
             String NewName="";
-            if (PlatformUtil.isWindows()){
+            File test=new File("c:\\windows");
+            
+            if (test.exists()){
                 NewName=FILENAME.replaceAll("/", "\\\\");
             }
             else
