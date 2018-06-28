@@ -93,6 +93,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 //    static Map<String, String> remotephotosfullpath;
     static Map<String, String> remotephotoswithdata;
     static Map<String, String> remotephotoswithoutdata;
+    static Map<String, String> remoteoriginalformat;
     static backup Backup;
     static restore Restore;
     static Thread process;
@@ -852,6 +853,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     public void RemotePhotoList() {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
+            remotephotoswithdata = new HashMap<>();
+            remotephotoswithoutdata = new HashMap<>();
+            remoteLastModifiedDate = new HashMap<>();
+            remoteoriginalformat = new HashMap<>();
+            
         if (!StopProcess) {
 
             try {
@@ -881,6 +887,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     //photos is the list of photos on selected album
                     Set<String> extras = new HashSet<String>();
                     extras.add("description");
+                    extras.add(Extras.ORIGINAL_FORMAT);
                     int photosperpage=500;
 
                     
@@ -900,6 +907,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         //foto is the selected photo
                         
                         Photo foto = (Photo) photos.get(i);
+                        //System.out.println(foto.getOriginalFormat());
                         String photoID=foto.getId();
                         String Date="";
                         String Filename="";
@@ -922,16 +930,19 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 if (!Date.equalsIgnoreCase("")&&!Filename.equalsIgnoreCase(""))
                                     {
                                         remotephotoswithdata.put(Album + "|" + Filename, photoID);
-                                        remoteLastModifiedDate.put(Album + "|" + Filename, Date);
+                                        //remoteLastModifiedDate.put(Album + "|" + Filename, Date);
+                                        remoteLastModifiedDate.put(photoID, Date);
                                     }
                                 else
                                     {
                                         remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
+                                        remoteoriginalformat.put(photoID, foto.getOriginalFormat());
                                     }
                             }
                         else
                             {
                                 remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
+                                remoteoriginalformat.put(photoID, foto.getOriginalFormat());
                             }
                         
                     }
@@ -942,7 +953,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         int photosperpage=500;
                         PhotoList photosNoAlbum = photoI.getNotInSet(photosperpage, 1);
                         int pages=photosNoAlbum.getPages();
-                        System.out.println(pages);
+                        //System.out.println(pages);
                         for (int x = 0; x < pages; x++) {
                         if (x>0){
                           photosNoAlbum = photoI.getNotInSet(photosperpage, x+1);  
@@ -950,6 +961,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         for (int i = 0; i < photosNoAlbum.size(); i++) {
                         Photo foto = (Photo) photosNoAlbum.get(i);
                         remotephotoswithoutdata.put("NoAlbum" + "|" + foto.getId(), foto.getId());
+                        remoteoriginalformat.put(foto.getId(), foto.getOriginalFormat());
                     }
                         }
             } catch (FlickrException ex) {
@@ -1005,10 +1017,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
-            remoteLastModifiedDate = new HashMap<>();
-            remotePhotosToDelete = new HashMap<>();
-            remotephotoswithdata = new HashMap<>();
-            remotephotoswithoutdata = new HashMap<>();
+           // remotePhotosToDelete = new HashMap<>();
 
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
@@ -1019,7 +1028,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 -> {
                 try {
                  String filename="";
-                 String Date= remoteLastModifiedDate.get(k); 
+                 String Date= remoteLastModifiedDate.get(v); 
                  filename=Directory+k.substring(k.lastIndexOf("|")+1);
                 File newFile = new File(filename);
                 // This command create subdirs that not exists in localpath
@@ -1044,12 +1053,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     }
                      
                 });
-                        remotephotoswithoutdata.forEach((k, v)
+                remotephotoswithoutdata.forEach((k, v)
                 -> {
                 try {
                     String filename="";
-                    String Date= remoteLastModifiedDate.get(k);
-                    String estensione=flickr.getPhotosInterface().getPhoto(v).getOriginalFormat();
+                    String Date= remoteLastModifiedDate.get(v);
+                    String estensione=remoteoriginalformat.get(v);
                     filename=Directory+"/NoBackupPhoto/"+k.substring(0, k.lastIndexOf("|"))+"/"+k.substring(k.lastIndexOf("|")+1)+"."+estensione;
                     File newFile = new File(filename);
                     // This command create subdirs that not exists in localpath
@@ -1150,11 +1159,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
-            remoteLastModifiedDate = new HashMap<>();
-            remotePhotosToDelete = new HashMap<>();
-            remotephotoswithdata = new HashMap<>();
-            remotephotoswithoutdata = new HashMap<>();
 
+            remotePhotosToDelete = new HashMap<>();
+
+            
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
             rc.setAuth(auth);
@@ -1185,7 +1193,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             // if I find the same remote file but the dataTag was different I'll reUpload the file
                                 File f=new File(v);
                                 String data=sdf.format(f.lastModified());
-                                if (data.equalsIgnoreCase(remoteLastModifiedDate.get(k))){
+                                if (data.equalsIgnoreCase(remoteLastModifiedDate.get(remotephotoswithdata.get(k)))){
                                     //If the date is the same i'll di nothing
                                 }
                                 else
