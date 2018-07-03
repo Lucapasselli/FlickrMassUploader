@@ -91,7 +91,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static restore Restore;
     static Thread process;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss");
-    SimpleDateFormat sdfOLD = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    //SimpleDateFormat sdfOLD = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
     static boolean CheckDate=false;
@@ -99,6 +100,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
     static int NRPhotos=0;
     static int NRAlbums=0;
+    
+    static int ConcurrentProcess=5;
+    static int NumProcess=0;
 
 
     static int sync = 0;
@@ -992,7 +996,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
     public void RemotePhotoList2() {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
-            int ConcurrentProcess=5;
+            
             remotephotoswithdata = new HashMap<>();
             remotephotoswithoutdata = new HashMap<>();
             remoteLastModifiedDate = new HashMap<>();
@@ -1012,23 +1016,57 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 
 
                 while (sets.hasNext()) {
-                   
-                                Photoset Pset = (Photoset) sets.next();
+                              
+                    
+                    //if concurrent process is highr then the value wait until some process finishing
+                                while(NumProcess>ConcurrentProcess-1){
+                                try {
+                                Thread.sleep(100);
+                                } catch (InterruptedException ex) {
+                                Message("Error Sleeping : "+ex.getMessage());
+                                }
+                                }  
                                 
-                                String Album=Pset.getTitle();
-                                String PsetID=Pset.getId();
+
+                    
+                                Photoset Pset = (Photoset) sets.next();
+
                                 remotealbums.put(Pset.getTitle(), Pset.getId());
                                 
                                 RetrievePhotos RP = new RetrievePhotos();
-                                RP.setPsetID(PsetID);
-                                RP.setAlbum(Album);
-                               
+                                RP.setPsetID(Pset.getId());
+                                RP.setAlbum(Pset.getTitle());
                                 Thread processo = new Thread(RP);
                                 processo.start();
+                                
+                                //take some time to start the process
+                                try {
+                                Thread.sleep(100);
+                                } catch (InterruptedException ex) {
+                                Message("Error Sleeping : "+ex.getMessage());
+                                }
+                                
+                                
+                                
+
+                                
+                                
+
                     
 
                 }
-                
+                                
+
+
+                                //wait until all process finish
+                                while(NumProcess!=0){
+                                try {
+                                Thread.sleep(100);
+                                } catch (InterruptedException ex) {
+                                Message("Error Sleeping : "+ex.getMessage());
+                                }
+                                }
+                                
                 
                 
                 
@@ -1052,12 +1090,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         
                         Message("Number of Flickr Albums="+NRAlbums);
                         Message("Number of Flickr Photos="+NRPhotos);
-                        Thread.sleep(100000);
+                        
             } catch (FlickrException ex) {
                 Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
-            }   catch (InterruptedException ex) {
-                    Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            }  
 
         }
     }
@@ -1114,7 +1150,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             RequestContext rc = RequestContext.getRequestContext();
             rc.setAuth(auth);
             Message("Retrieving Remote Photo List");
-            RemotePhotoList();
+            RemotePhotoList2();
             remotephotoswithdata.forEach((k, v)
                 -> {
                 try {
@@ -1300,7 +1336,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 //Faccio l'elenco degli album e delle foto su flickr
 
                 Message("Retrieving Remote Photo List");
-                RemotePhotoList();
+                RemotePhotoList2();
                 //elenco fotolocali non fa altro che compilare l'hasmap fotolocali con l'elenco delle foto sull'hd
                 Message("Retrieving Local Photo List");
                 LocalPhotoList(Directory, 0, Directory);
@@ -1462,7 +1498,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
     public void Message(String messaggio) {
         if (GraphicsOn) {
-            TextAreaLog.append(String.valueOf(new Timestamp(System.currentTimeMillis()))+" : "+messaggio + "\n");
+            TextAreaLog.append(String.valueOf(sdf2.format(System.currentTimeMillis()))+" : "+messaggio + "\n");
             TextAreaLog.setCaretPosition(TextAreaLog.getDocument().getLength());
 
         } else {
@@ -1665,12 +1701,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
              Album=ALBUM;
              
          }
-PhotosetsInterface psi = flickr.getPhotosetsInterface();
+        PhotosetsInterface psi = flickr.getPhotosetsInterface();
         public void run() {
-           
+
+                    NumProcess++;
+
                     
                     try {
-                       RequestContext rc = RequestContext.getRequestContext();
+                        RequestContext rc = RequestContext.getRequestContext();
                         rc.setAuth(auth);
                         Set<String> extras = new HashSet<>();
                         extras.add("description");
@@ -1719,7 +1757,7 @@ PhotosetsInterface psi = flickr.getPhotosetsInterface();
                                         }
                                         else
                                         {
-                                            Message(photoID);
+                                           // Message(photoID);
                                             remotephotoswithdata.put(Album + "|" + Filename, photoID);
                                             remoteLastModifiedDate.put(photoID, Date);
                                         }
@@ -1746,6 +1784,7 @@ PhotosetsInterface psi = flickr.getPhotosetsInterface();
                     } catch (FlickrException ex) {
                         Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    NumProcess--;
                     
                         
                        
