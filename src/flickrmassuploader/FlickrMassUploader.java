@@ -39,6 +39,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.security.Key;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -51,6 +52,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -104,7 +107,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static int ConcurrentProcess=5;
     static int NumProcess=0;
 
-
+    static String key = "Pippo345Pluto345";
+    
     static int sync = 0;
     //sync=o means no sync
     //sync=1 means sync only directorys
@@ -147,6 +151,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         ButtonForceStop.setVisible(false);
         Message("Version : "+version);
         Message("OS : "+OS);
+        
 
     }
 
@@ -733,6 +738,88 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         return connectionOK;
     }
+    
+    
+  
+    
+    public String Crypt(String text) 
+    {
+        String CryptedString="";
+        try 
+        {
+         
+            //String key = "Bar12345Bar12345"; // 128 bit key
+            // Create key and cipher
+            Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            // encrypt the text
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+            byte[] encrypted = cipher.doFinal(text.getBytes());
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b: encrypted) {
+                sb.append((char)b);
+            }
+            // the encrypted String
+            String enc = sb.toString();
+            CryptedString=enc;
+
+
+        }
+        catch(Exception e) 
+        {
+            //Message("Error Crypting String : "+e.getMessage());
+            System.out.println("Error Crypting String : "+e.getMessage());
+            CryptedString=null;
+        }
+        return CryptedString;
+    }
+    
+    
+        public String Decrypt(String text) 
+    {
+        String DecryptedString="";
+       try 
+        {
+         
+            //String key = "Bar12345Bar12345"; // 128 bit key
+            // Create key and cipher
+            Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            // encrypt the text
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+
+                        // now convert the string to byte array
+            // for decryption
+            byte[] bb = new byte[text.length()];
+            for (int i=0; i<text.length(); i++) {
+                bb[i] = (byte) text.charAt(i);
+            }
+
+            // decrypt the text
+            cipher.init(Cipher.DECRYPT_MODE, aesKey);
+            String decrypted = new String(cipher.doFinal(bb));
+            DecryptedString=decrypted;
+           
+
+        }
+        catch(Exception e) 
+        {
+          // Message("Error Decrypting String : "+e.getMessage());
+           System.out.println("Error Decrypting String : "+e.getMessage());
+           DecryptedString=null;
+        }
+        return DecryptedString;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     private String makeSafeFilename(String input) {
         byte[] fname = input.getBytes();
@@ -1575,11 +1662,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             prop.setProperty("apiKey", apiKey);
             prop.setProperty("sharedSecret", sharedSecret);
-            if (AccessToken!=null) prop.setProperty("TokenAccesso", AccessToken);
-            if (TokenSecret!=null) prop.setProperty("TokenSecret", TokenSecret);
+            if (AccessToken!=null) prop.setProperty("TokenAccesso", Crypt(AccessToken));
+            if (TokenSecret!=null) prop.setProperty("TokenSecret", Crypt(TokenSecret));
             prop.setProperty("Directory", Directory);
             prop.setProperty("Sync", String.valueOf(sync));
-            if (User!=null) prop.setProperty("User", User);
+            if (User!=null) prop.setProperty("User", Crypt(User));
             //prova
             // save properties to project root folder
             prop.store(output, null);
@@ -1594,6 +1681,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     public void ReadPropertiesFile() {
 
         try {
+            String temp;
             Properties prop = new Properties();
             InputStream input;
             input = new FileInputStream("config.properties");
@@ -1608,9 +1696,20 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             sync = Integer.parseInt(prop.getProperty("Sync"));
             else sync=0;
             User = prop.getProperty("User");
-
             // save properties to project root folder
             input.close();
+            
+            boolean filecrypted=true;
+            temp=Decrypt(User);
+            if (temp!=null) User=temp;else filecrypted=false;
+            temp=Decrypt(AccessToken);
+            if (temp!=null) AccessToken=temp;else filecrypted=false;
+            temp=Decrypt(TokenSecret);
+            if (temp!=null) TokenSecret=temp;else filecrypted=false;
+            
+            if (filecrypted==false) WritePropertiesFile();
+            
+            
         } catch (FileNotFoundException ex) {
             Message("Error reading Property file -> " + ex.getMessage());
         } catch (IOException ex) {
