@@ -92,7 +92,7 @@
 
         <manifest>
             <attribute name="Main-Class" value="${main.class}"/>
-            <attribute name="Implementation-Version" value="Beta 1.24"/>
+            <attribute name="Implementation-Version" value="Beta 1.25"/>
         </manifest>
     </jar>
 

@@ -102,6 +102,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static String OS=System.getProperty("os.name").toLowerCase();
     
     static int NRPhotos=0;
+    static int NRnoBPhotos=0;
     static int NRAlbums=0;
     
     static int ConcurrentProcess=5;
@@ -151,6 +152,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         ButtonForceStop.setVisible(false);
         Message("Version : "+version);
         Message("OS : "+OS);
+        Message("INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped");
         
 
     }
@@ -627,8 +629,19 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             gr.BackupYourFiles();
                         }
                         gr.dispose();
-                    } else {
-                        System.out.println("Please launch program without argument for graphics or with /download argument for batch option");
+                    } else if (args[0].equalsIgnoreCase("/restore")) {
+                        gr = new FlickrMassUploader();
+                        StopProcess = false;
+                        boolean connectionOK;
+                        connectionOK = gr.auth();
+                        if (connectionOK) {
+                            gr.RestoreYourFiles();
+                        }
+                        gr.dispose();
+                    } else
+
+                    {
+                        System.out.println("Please launch program without argument for graphics or with /backup or /restore argument for batch option");
                     }
 
                 }
@@ -1094,6 +1107,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             try {
                 NRPhotos=0;
                 NRAlbums=0;
+                NRnoBPhotos=0;
                 PhotosInterface photoI=flickr.getPhotosInterface();
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
                 
@@ -1176,7 +1190,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         }
                         
                         Message("Number of Flickr Albums="+NRAlbums);
-                        Message("Number of Flickr Photos="+NRPhotos);
+                        Message("Number of Flickr Photos backuped with FlickrMassUploader="+NRPhotos);
+                        Message("Number of Flickr Photos NOT backuped with FlickrMassUploader="+NRnoBPhotos);
                         
             } catch (FlickrException ex) {
                 Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
@@ -1273,18 +1288,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 if (!newFile.exists()){
                     
                     phototodownload.put(v, filename);
-                    /*downloadfile(v,newFile);
-                    if (Date!=null&&!Date.equalsIgnoreCase("")) newFile.setLastModified(sdf.parse(Date).getTime());*/
+
                     
                    } 
 
                     } 
-
-                
-               /* catch (FlickrException ex) {
-                        Message("Error downloading file:" + v + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
-                       // Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
-                    }*/ catch (Exception ex) {
+                catch (Exception ex) {
                         Message("Error verifiing files:" + v + "   ->   " + ex.getMessage());
                     }
                      
@@ -1450,7 +1459,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 }
                                 else
                                     {
-                                            remotePhotosToDelete.put(k, remotephotoswithdata.get(k));
+                                            //v is the name of the file
+                                            //remotephotoswithdata.get(k) is the photoID
+                                            remotePhotosToDelete.put(v, remotephotoswithdata.get(k));
                                             phototoupload.put(k, v);
                                      }
                         }
@@ -1466,7 +1477,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     LabelStartTime.setText("Started Time: "
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
-                Message("Number photo on your computer -> " + localphotos.size());
+                Message("Number photo on your computer (with the exclusin of NoBackupPhoto Folder) -> " + localphotos.size());
+                Message("Remeber that photos in folder NoBackupPhoto will be not considered for backup");
                 Message("Number of photo to upload -> " + numeroFoto);
 
                 final int[] count = {0};
@@ -1502,8 +1514,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 remotePhotosToDelete.forEach((k, v)
                         -> {
                                     try {
-                                    Message("Deleting file " + k + " from the cloud");
+                                        if (!StopProcess){
+                                    Message (k+" was reuploaded becouse the last modified date of the file was changed");
+                                    Message("Deleting old copy of the file from the cloud");
                                     flickr.getPhotosInterface().delete(v); 
+                                    }
                                      } catch (FlickrException ex) {
 
                                 Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
@@ -1589,7 +1604,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             TextAreaLog.setCaretPosition(TextAreaLog.getDocument().getLength());
 
         } else {
-            System.out.println(String.valueOf(new Timestamp(System.currentTimeMillis()))+" : "+messaggio);
+            System.out.println(String.valueOf(sdf2.format(System.currentTimeMillis()))+" : "+messaggio);
         }
     }
 
@@ -1617,8 +1632,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                             LocalPhotoList(file.getCanonicalPath(), indent, DirRiferimento);
                         } else {
-
-                            LocalPhotoList(file.getCanonicalPath(), indent, file.getCanonicalPath());
+                            //Folder NoBackupPhoto are not inclued for backup 
+                            if (!file.getName().equalsIgnoreCase("NoBackupPhoto")) LocalPhotoList(file.getCanonicalPath(), indent, file.getCanonicalPath());
                         }
                     } else {
                         if (indentamento == 0) {
@@ -1859,21 +1874,23 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                            // Message(photoID);
                                             remotephotoswithdata.put(Album + "|" + Filename, photoID);
                                             remoteLastModifiedDate.put(photoID, Date);
+                                            NRPhotos++;
                                         }
                                     }
                                     else
                                     {
                                         remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
                                         remoteoriginalformat.put(photoID, foto.getOriginalFormat());
+                                        NRnoBPhotos++;
                                     }
                                 }
                                 else
                                 {
                                     remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
                                     remoteoriginalformat.put(photoID, foto.getOriginalFormat());
+                                    NRnoBPhotos++;
                                 }
                                 
-                                NRPhotos++;
                                 
                             }
                         }
