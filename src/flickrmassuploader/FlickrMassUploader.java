@@ -22,8 +22,8 @@ import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.tags.Tag;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
-import static flickrmassuploader.FlickrMassUploader.Nsid;
-import static flickrmassuploader.FlickrMassUploader.auth;
+//import static flickrmassuploader.FlickrMassUploader.Nsid;
+//import static flickrmassuploader.FlickrMassUploader.auth;
 import java.awt.Desktop;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,6 +41,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.security.Key;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,20 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.log4j.PropertyConfigurator;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxBinary;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
 /**
  *
@@ -78,6 +93,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static String User="";
     static String Directory = "";
     static String ConfirmationCode = "";
+    static String Username ="";
+    static String Password="";
     static Map<String, String> localphotos;
 //    static Map<String, String> remotephotos;
     static Map<String, String> remotealbums;
@@ -90,6 +107,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Map<String, String> remotephotoswithdata;
     static Map<String, String> remotephotoswithoutdata;
     static Map<String, String> remoteoriginalformat;
+    static Map<String, String> remotemedia;
+    static Map<String, String> videotodownload;
     static backup Backup;
     static restore Restore;
     static Thread process;
@@ -99,6 +118,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
     static boolean CheckDate=false;
+    static String DownloadVideo="No";
     static String OS=System.getProperty("os.name").toLowerCase();
     
     static int NRPhotos=0;
@@ -116,6 +136,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     //sync=2 means full sync
 
     public FlickrMassUploader() {
+        
+        String log4jConfPath = "log4j.properties";
+        PropertyConfigurator.configure(log4jConfPath);
 
         File proprieta = new File("config.properties");
         //prima di leggere il file devo verificare se esiste
@@ -150,6 +173,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     //    ButtonRestore.setVisible(false);
         LabelForceStop.setVisible(false);
         ButtonForceStop.setVisible(false);
+        if (DownloadVideo.equalsIgnoreCase("Yes")) CheckBoxEnableVideos.setSelected(true);
         Message("Version : "+version);
         Message("OS : "+OS);
         Message("INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped");
@@ -191,6 +215,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         CheckBoxRestore = new javax.swing.JCheckBox();
         ButtonForceStop = new javax.swing.JButton();
         LabelForceStop = new javax.swing.JLabel();
+        CheckBoxEnableVideos = new javax.swing.JCheckBox();
+        ButtonUpdateFlickrCredentials = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -297,6 +323,20 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelForceStop.setForeground(new java.awt.Color(255, 0, 51));
         LabelForceStop.setText("Wait until current process finish or press Force Stop to immediately kill the process!");
 
+        CheckBoxEnableVideos.setText("Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Firefox installed");
+        CheckBoxEnableVideos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CheckBoxEnableVideosActionPerformed(evt);
+            }
+        });
+
+        ButtonUpdateFlickrCredentials.setText("Update Flickr credentials and Test");
+        ButtonUpdateFlickrCredentials.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonUpdateFlickrCredentialsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -304,46 +344,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(ButtonUpload)
-                                .addGap(68, 68, 68)
-                                .addComponent(ButtonRequestToken)
-                                .addGap(80, 80, 80))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(TextFieldPhotoDirectory)
-                                    .addComponent(TextFieldApiKey)
-                                    .addComponent(TextFieldSharedSecret)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 62, Short.MAX_VALUE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addGap(17, 17, 17))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(96, 96, 96)
-                        .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ButtonRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
-                        .addGap(17, 17, 17))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane1)
                         .addContainerGap())
@@ -361,7 +361,56 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(ButtonForceStop, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())))))
+                                .addContainerGap())))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.PREFERRED_SIZE, 574, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(ButtonUpload)
+                                        .addGap(68, 68, 68)
+                                        .addComponent(ButtonRequestToken)
+                                        .addGap(80, 80, 80))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(TextFieldPhotoDirectory)
+                                            .addComponent(TextFieldApiKey)
+                                            .addComponent(TextFieldSharedSecret)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(0, 62, Short.MAX_VALUE)))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))))
+                        .addGap(17, 17, 17))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(96, 96, 96)
+                        .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(ButtonRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
+                        .addGap(17, 17, 17))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(ButtonUpdateFlickrCredentials, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ButtonChooseDirectory, ButtonDeleteCredentials, ButtonSave});
@@ -387,7 +436,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LabelPhotoDirectory)
                     .addComponent(ButtonChooseDirectory))
-                .addGap(35, 35, 35)
+                .addGap(10, 10, 10)
+                .addComponent(CheckBoxEnableVideos)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -400,7 +451,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ButtonUpload)
-                            .addComponent(ButtonRequestToken)))
+                            .addComponent(ButtonRequestToken)
+                            .addComponent(ButtonUpdateFlickrCredentials)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(LabelSyncType)
@@ -474,9 +526,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         TokenSecret = "";
         apiKey = "";
         sharedSecret = "";
+        Username = "";
+        Password = "";
         LabelUser.setText("Credentials Deleted!, Please request a new Token");
         ButtonUpload.setEnabled(false);
         ButtonRequestToken.setEnabled(true);
+        JOptionPane.showMessageDialog(null, "<html>To confirm crededentials deletion press Save button, otherwise close and reopen the program<br></html>");
+
     }//GEN-LAST:event_ButtonDeleteCredentialsActionPerformed
 
     private void ButtonChooseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonChooseDirectoryActionPerformed
@@ -510,7 +566,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 try {
                     Directory = fc.getSelectedFile().getCanonicalPath();
                 } catch (IOException ex1) {
-                    Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex1);
+                    Message ("Error choosing directory -> "+ex1.getMessage());
+                    //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex1);
                 }
                 TextFieldPhotoDirectory.setText(Directory);
             }
@@ -582,6 +639,73 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             process.start();
         }
     }//GEN-LAST:event_ButtonRestoreActionPerformed
+
+    private void CheckBoxEnableVideosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckBoxEnableVideosActionPerformed
+        // TODO add your handling code here:
+        if (Username==""||Username==null)
+            {
+                JOptionPane.showMessageDialog(null, "<html>To download Videos you must save your Username and Password<br></html>");
+                Username = JOptionPane.showInputDialog("Please insert your Flickr Username");
+                Password = JOptionPane.showInputDialog("Please insert your Flickr Password");
+                WritePropertiesFile();
+            }
+        if (CheckBoxEnableVideos.isSelected()) DownloadVideo="Yes";
+        
+        
+    }//GEN-LAST:event_CheckBoxEnableVideosActionPerformed
+
+    private void ButtonUpdateFlickrCredentialsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonUpdateFlickrCredentialsActionPerformed
+        
+            // TODO add your handling code here:
+            Username = JOptionPane.showInputDialog("Please insert your Flickr Username",Username);
+            Password = JOptionPane.showInputDialog("Please insert your Flickr Password",Password);
+            JOptionPane.showMessageDialog(null, "<html>Press ok to test credentials<br>"
+                    + "and be patient it will take also a minute to test</html>");
+            System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
+            FirefoxBinary firefoxBinary = new FirefoxBinary();
+            firefoxBinary.addCommandLineOptions("--headless");
+            FirefoxOptions firefoxOptions = new FirefoxOptions();
+            firefoxOptions.setBinary(firefoxBinary);
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);
+            // LOGIN
+             try {
+            driver.get("https://login.yahoo.com");
+            //Message(driver.getCurrentUrl());
+            WebElement username = driver.findElement(By.name("username"));
+            username.sendKeys(Username);
+            WebElement button = driver.findElement(By.name("signin"));
+            button.click();
+            Thread.sleep(3000);
+            WebElement password = driver.findElement(By.name("password"));
+            password.sendKeys(Password);
+            WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
+            buttonpassword.click();
+            Thread.sleep(3000);
+            driver.navigate().to("https://www.flickr.com/signin");
+            
+            Thread.sleep(3000);
+            //Message(driver.getCurrentUrl());
+            if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
+            {
+                driver.quit();
+                JOptionPane.showMessageDialog(null, "<html>Flickr login Failed, please Try again<br></html>");
+                
+            }
+            else{
+                driver.quit();
+                JOptionPane.showMessageDialog(null, "<html>Flickr login OK!!!<br></html>");
+                WritePropertiesFile();
+            } 
+        } catch (InterruptedException ex) {
+            //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+            Message ("Error Sleeping -> "+ex.getMessage());
+            driver.quit();
+        }  catch (org.openqa.selenium.WebDriverException ex) {
+            //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+            Message ("Error retrieving information from site: -> "+ex.getMessage());
+            driver.quit();
+        }
+    }//GEN-LAST:event_ButtonUpdateFlickrCredentialsActionPerformed
 
     /**
      * @param args the command line arguments
@@ -753,6 +877,134 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }
     
     
+    
+    
+    
+    
+    
+    
+     private void DownloadVideos(int[] conta,int numeroMedia, long InitialTime) throws Exception{
+          
+                System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
+            Message("Wait... i'm doing the login to Flickr....");
+            FirefoxBinary firefoxBinary = new FirefoxBinary();
+            firefoxBinary.addCommandLineOptions("--headless");
+            FirefoxOptions firefoxOptions = new FirefoxOptions();
+            firefoxOptions.setBinary(firefoxBinary);
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);
+     // LOGIN
+     try {
+		driver.get("https://login.yahoo.com");
+                WebElement username = driver.findElement(By.name("username"));
+                username.sendKeys(Username);
+                WebElement button = driver.findElement(By.name("signin"));
+                button.click();
+                Thread.sleep(3000);
+                WebElement password = driver.findElement(By.name("password"));
+                password.sendKeys(Password);
+                WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
+                buttonpassword.click();
+                Thread.sleep(3000);
+                driver.navigate().to("https://www.flickr.com/signin");
+                
+                Thread.sleep(4000);
+                if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
+                    {
+                           Message ("Flickr login Failed, please press button 'Update Flickr credentials and Test' and try again");
+                           Message ("FLICKR VIDEO DOWNLOAD FAILED!!!");
+                }
+                else{
+                Message ("Flickr login OK!!!");
+                
+                
+                // Send cookies to apache http client to mantain the authentication 
+                Set<Cookie> seleniumCookies = driver.manage().getCookies();
+                CookieStore cookieStore = new BasicCookieStore();
+
+                for(Cookie seleniumCookie : seleniumCookies){
+                    BasicClientCookie basicClientCookie =
+			new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
+                    basicClientCookie.setDomain(seleniumCookie.getDomain());
+                    basicClientCookie.setExpiryDate(seleniumCookie.getExpiry());
+                    basicClientCookie.setPath(seleniumCookie.getPath());
+                    cookieStore.addCookie(basicClientCookie);
+                    }
+                driver.quit();
+                
+                
+                DefaultHttpClient httpClient = new DefaultHttpClient();
+                httpClient.setCookieStore(cookieStore);
+                
+                
+                videotodownload.forEach((k, v)
+                -> {
+                      if (!StopProcess) {
+                    try {
+                         
+                        conta[0]++;
+                        
+                        HttpGet httpGet = new HttpGet("https://www.flickr.com/video_download.gne?id="+k);
+                        Message("Downloding file form: " + "https://www.flickr.com/video_download.gne?id="+k+ "        File Name -> "+v);
+                        HttpResponse response = httpClient.execute(httpGet);
+                        
+                        HttpEntity entity = response.getEntity();
+                        if (entity != null) {
+                            File TempOutputFile = new File(v+"_temp");
+                            File OutputFile = new File(v);
+                            InputStream inputStream = entity.getContent();
+                            FileOutputStream fileOutputStream = new FileOutputStream(TempOutputFile);
+                            int read = 0;
+                            byte[] bytes = new byte[1024];
+                            while ((read = inputStream.read(bytes)) != -1) {
+                                fileOutputStream.write(bytes, 0, read);
+                            }
+                            fileOutputStream.close();
+                            Files.copy(TempOutputFile.toPath(), OutputFile.toPath());
+                            TempOutputFile.delete();
+                            String Date= remoteLastModifiedDate.get(k);
+                            if (Date!=null&&!Date.equalsIgnoreCase("")) OutputFile.setLastModified(sdf.parse(Date).getTime());
+                            
+                            Message("Downloded File -> " +v+ "File Lenght -> "+OutputFile.length() + " bytes. ");
+                        }
+                        else {
+                            Message("Download failed!");
+                        }
+                        if (GraphicsOn) {
+                            ProgressBarBackup.setValue(conta[0]);
+                            ProgressBarBackup.setString(conta[0] + "/" + numeroMedia);
+                            LabelTimeRemaining.setText("Time Remaining: "
+                                    + String.valueOf(TimeUnit.MILLISECONDS.toMinutes(((System.currentTimeMillis() - InitialTime) / (long) conta[0]) * (numeroMedia - conta[0]))) + " minutes");
+                        }
+                        
+                        
+                        
+                    } catch (IOException ex) {
+                        Message ("Error Downloadinf Videos -> "+ex.getMessage());
+                    }catch (ParseException ex) {
+                        Message ("Error Downloadinf Videos -> "+ex.getMessage());
+                            }
+                    } 
+                
+                });
+                }
+
+        } catch (org.openqa.selenium.WebDriverException ex) {
+            Message ("Error retrieving information from site: -> "+ex.getMessage());
+            driver.quit();
+        }
+           }     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   
     
     public String Crypt(String text) 
@@ -904,7 +1156,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Files.copy(tempFile.toPath(), newFile.toPath());
                 tempFile.delete();
                 if (StopProcess) tempFile.delete();
-            } 
+            }else
+                   {
+                      videotodownload.put(photoID, newFile.getCanonicalPath());
+                   } 
           }      
 
      // url=("https://www.flickr.com/video_download.gne?id="+photoID);
@@ -1185,6 +1440,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         Photo foto = (Photo) photosNoAlbum.get(i);
                         remotephotoswithoutdata.put("NoAlbum" + "|" + foto.getId(), foto.getId());
                         remoteoriginalformat.put(foto.getId(), foto.getOriginalFormat());
+                        if (foto.getMedia().equalsIgnoreCase("video")) remotemedia.put(foto.getId(), foto.getMedia());
+                        
                         NRPhotos++;
                     }
                         }
@@ -1245,7 +1502,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
-            phototodownload = new HashMap<>();;
+            phototodownload = new HashMap<>();
+            videotodownload = new HashMap<>();
+            remotemedia = new HashMap<>(); 
            // remotePhotosToDelete = new HashMap<>();
 
             //authentication    
@@ -1264,8 +1523,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 // if fileName don't Exist or LastModified Date was different the file was downloaded
                 if (!newFile.exists()){
                     
+                    if (remotemedia.get(v)==null)
+                        {
                     phototodownload.put(v, filename);
-
+                    }else
+                         {
+                             videotodownload.put(v, filename);
+                        }
                     
                    } 
 
@@ -1287,7 +1551,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     // if fileName don't Exist or LastModified Date was different the file was downloaded
                 if (!newFile.exists()){
                     
+                                        if (remotemedia.get(v)==null)
+                        {
                     phototodownload.put(v, filename);
+                    }else
+                         {
+                             videotodownload.put(v, filename);
+                        }
 
                     
                    } 
@@ -1301,17 +1571,17 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 
                 
                 
-                int numeroFoto = phototodownload.size();
+                int numeroMedia = phototodownload.size()+videotodownload.size();
                 if (GraphicsOn) {
-                    ProgressBarBackup.setMaximum(numeroFoto);
+                    ProgressBarBackup.setMaximum(numeroMedia);
                     ProgressBarBackup.setValue(0);
-                    ProgressBarBackup.setString("0/" + numeroFoto);
+                    ProgressBarBackup.setString("0/" + numeroMedia);
                     ProgressBarBackup.setStringPainted(true);
                     LabelStartTime.setText("Started Time: "
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
                 //Message("Number photo on your computer -> " + localphotos.size());
-                Message("Number of photo to download -> " + numeroFoto);
+                Message("Number of media to download -> " + numeroMedia);
                 
                 
                 final int[] count = {0};
@@ -1326,9 +1596,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     if (Date!=null&&!Date.equalsIgnoreCase("")) file.setLastModified(sdf.parse(Date).getTime());
                     if (GraphicsOn) {
                             ProgressBarBackup.setValue(count[0]);
-                            ProgressBarBackup.setString(count[0] + "/" + numeroFoto);
+                            ProgressBarBackup.setString(count[0] + "/" + numeroMedia);
                             LabelTimeRemaining.setText("Time Remaining: "
-                                    + String.valueOf(TimeUnit.MILLISECONDS.toMinutes(((System.currentTimeMillis() - InitialTime) / (long) count[0]) * (numeroFoto - count[0]))) + " minutes");
+                                    + String.valueOf(TimeUnit.MILLISECONDS.toMinutes(((System.currentTimeMillis() - InitialTime) / (long) count[0]) * (numeroMedia - count[0]))) + " minutes");
                         }
                 } catch (FlickrException ex) {
                         Message("Error downloading file:" + k + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
@@ -1343,6 +1613,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 
                 });
                 
+                if (DownloadVideo.equalsIgnoreCase("Yes"))
+                {
+                try {
+                    DownloadVideos(count,numeroMedia,InitialTime);
+                } catch (Exception ex) {
+                    //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+                    Message("Error downloading videos from flickr -> "+ex.getMessage());
+                }
+                }
                 
                 
             
@@ -1420,6 +1699,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             phototoupload = new HashMap<>();
             localalbums = new HashMap<>();
             localphotos = new HashMap<>();
+            remotemedia = new HashMap<>();
 
             remotePhotosToDelete = new HashMap<>();
 
@@ -1477,7 +1757,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     LabelStartTime.setText("Started Time: "
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
-                Message("Number photo on your computer (with the exclusin of NoBackupPhoto Folder) -> " + localphotos.size());
+                Message("Number photo on your computer (with the exclusion of NoBackupPhoto Folder) -> " + localphotos.size());
                 Message("Remeber that photos in folder NoBackupPhoto will be not considered for backup");
                 Message("Number of photo to upload -> " + numeroFoto);
 
@@ -1674,16 +1954,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             Properties prop = new Properties();
             OutputStream output = null;
             output = new FileOutputStream("config.properties");
-
             prop.setProperty("apiKey", apiKey);
             prop.setProperty("sharedSecret", sharedSecret);
             if (AccessToken!=null) prop.setProperty("TokenAccesso", Crypt(AccessToken));
             if (TokenSecret!=null) prop.setProperty("TokenSecret", Crypt(TokenSecret));
+            if (Username!=null) prop.setProperty("U", Crypt(Username));
+            if (Password!=null) prop.setProperty("P", Crypt(Password));                     
             prop.setProperty("Directory", Directory);
             prop.setProperty("Sync", String.valueOf(sync));
             if (User!=null) prop.setProperty("User", Crypt(User));
-            //prova
-            // save properties to project root folder
+            prop.setProperty("VideoDownload",DownloadVideo);
             prop.store(output, null);
             output.close();
         } catch (FileNotFoundException ex) {
@@ -1707,6 +1987,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             AccessToken = prop.getProperty("TokenAccesso");
             TokenSecret = prop.getProperty("TokenSecret");
             Directory = prop.getProperty("Directory");
+            Username = prop.getProperty("U");
+            Password = prop.getProperty("P");
+            if (prop.getProperty("VideoDownload")!=null)    DownloadVideo = prop.getProperty("VideoDownload");
             if (prop.getProperty("Sync")!=null)
             sync = Integer.parseInt(prop.getProperty("Sync"));
             else sync=0;
@@ -1721,6 +2004,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             if (temp!=null) AccessToken=temp;else filecrypted=false;
             temp=Decrypt(TokenSecret);
             if (temp!=null) TokenSecret=temp;else filecrypted=false;
+            temp=Decrypt(Username);
+            if (temp!=null) Username=temp;else filecrypted=false;
+            temp=Decrypt(Password);
+            if (temp!=null) Password=temp;else filecrypted=false;
             
             if (filecrypted==false) WritePropertiesFile();
             
@@ -1827,6 +2114,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         Set<String> extras = new HashSet<>();
                         extras.add("description");
                         extras.add(Extras.ORIGINAL_FORMAT);
+                        extras.add(Extras.MEDIA);
                         int photosperpage=500;
                         PhotoList photos = psi.getPhotos(PsetID, extras, 0, photosperpage, 1);
                         int pages=photos.getPages();
@@ -1874,6 +2162,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                            // Message(photoID);
                                             remotephotoswithdata.put(Album + "|" + Filename, photoID);
                                             remoteLastModifiedDate.put(photoID, Date);
+                                            if (foto.getMedia().equalsIgnoreCase("video")) remotemedia.put(photoID, foto.getMedia());
                                             NRPhotos++;
                                         }
                                     }
@@ -1881,6 +2170,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     {
                                         remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
                                         remoteoriginalformat.put(photoID, foto.getOriginalFormat());
+                                        if (foto.getMedia().equalsIgnoreCase("video")) remotemedia.put(photoID, foto.getMedia());
                                         NRnoBPhotos++;
                                     }
                                 }
@@ -1888,6 +2178,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 {
                                     remotephotoswithoutdata.put(Album + "|" + foto.getId(), photoID);
                                     remoteoriginalformat.put(photoID, foto.getOriginalFormat());
+                                    if (foto.getMedia().equalsIgnoreCase("video")) remotemedia.put(photoID, foto.getMedia());
                                     NRnoBPhotos++;
                                 }
                                 
@@ -1898,6 +2189,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     
                         NRAlbums++;
                     } catch (FlickrException ex) {
+                        Message ("Error retreiving photo list:"+ex.getErrorMessage());
                         Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     NumProcess--;
@@ -1961,7 +2253,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JButton ButtonRestore;
     private javax.swing.JButton ButtonSave;
     private javax.swing.JButton ButtonStop;
+    private javax.swing.JButton ButtonUpdateFlickrCredentials;
     private javax.swing.JButton ButtonUpload;
+    private javax.swing.JCheckBox CheckBoxEnableVideos;
     private javax.swing.JCheckBox CheckBoxRestore;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
