@@ -67,10 +67,16 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.log4j.PropertyConfigurator;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 /**
  *
@@ -323,7 +329,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelForceStop.setForeground(new java.awt.Color(255, 0, 51));
         LabelForceStop.setText("Wait until current process finish or press Force Stop to immediately kill the process!");
 
-        CheckBoxEnableVideos.setText("Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Firefox installed");
+        CheckBoxEnableVideos.setText("Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Chrome installed");
         CheckBoxEnableVideos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CheckBoxEnableVideosActionPerformed(evt);
@@ -409,7 +415,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGap(17, 17, 17))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(ButtonUpdateFlickrCredentials, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ButtonUpdateFlickrCredentials, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
         );
 
@@ -885,29 +891,36 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
      private void DownloadVideos(int[] conta,int numeroMedia, long InitialTime) throws Exception{
           
-                System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
+            //System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
             Message("Wait... i'm doing the login to Flickr....");
-            FirefoxBinary firefoxBinary = new FirefoxBinary();
-            firefoxBinary.addCommandLineOptions("--headless");
-            FirefoxOptions firefoxOptions = new FirefoxOptions();
-            firefoxOptions.setBinary(firefoxBinary);
-            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);
+            System.setProperty("https.protocols", "TLSv1.1");
+          /*  FirefoxOptions firefoxOptions = new FirefoxOptions();
+            firefoxOptions.setHeadless(true);
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);*/
+             
+   
+     ChromeOptions chromeOptions = new ChromeOptions();
+     chromeOptions.setHeadless(true);
+     WebDriver driver = new ChromeDriver(chromeOptions);
+     
+   
      // LOGIN
      try {
-		driver.get("https://login.yahoo.com");
+		//driver.get("https://login.yahoo.com");
+                driver.get("https://www.flickr.com/signin");
                 WebElement username = driver.findElement(By.name("username"));
                 username.sendKeys(Username);
                 WebElement button = driver.findElement(By.name("signin"));
                 button.click();
-                Thread.sleep(3000);
+                Thread.sleep(5000);
                 WebElement password = driver.findElement(By.name("password"));
                 password.sendKeys(Password);
                 WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
                 buttonpassword.click();
-                Thread.sleep(3000);
-                driver.navigate().to("https://www.flickr.com/signin");
+                Thread.sleep(5000);
+                //driver.navigate().to("https://www.flickr.com/signin");
                 
-                Thread.sleep(4000);
+               // Thread.sleep(5000);
                 if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
                     {
                            Message ("Flickr login Failed, please press button 'Update Flickr credentials and Test' and try again");
@@ -920,6 +933,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 // Send cookies to apache http client to mantain the authentication 
                 Set<Cookie> seleniumCookies = driver.manage().getCookies();
                 CookieStore cookieStore = new BasicCookieStore();
+                
 
                 for(Cookie seleniumCookie : seleniumCookies){
                     BasicClientCookie basicClientCookie =
@@ -929,12 +943,14 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     basicClientCookie.setPath(seleniumCookie.getPath());
                     cookieStore.addCookie(basicClientCookie);
                     }
-                driver.quit();
                 
                 
+               
                 DefaultHttpClient httpClient = new DefaultHttpClient();
                 httpClient.setCookieStore(cookieStore);
-                
+                //Message("fino a qui ci sono");
+               // Thread.sleep(5000);
+                driver.quit();
                 
                 videotodownload.forEach((k, v)
                 -> {
@@ -991,7 +1007,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         } catch (org.openqa.selenium.WebDriverException ex) {
             Message ("Error retrieving information from site: -> "+ex.getMessage());
             driver.quit();
+            //service.stop();
         }
+     // driver.quit();
+     //service.stop();
            }     
     
     
@@ -1158,7 +1177,24 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 if (StopProcess) tempFile.delete();
             }else
                    {
-                      videotodownload.put(photoID, newFile.getCanonicalPath());
+                       
+             /*        Message(getOriginalVideoUrl(flickr, photoID));  
+                     Message("Downloading " + newFile.getName());
+                BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.VIDEO_ORIGINAL));
+                FileOutputStream fos = new FileOutputStream(tempFile);
+                int read;
+                while ((read = inStream.read()) != -1) {
+                    if (StopProcess) break;
+                    fos.write(read);
+                }
+                fos.flush();
+                fos.close();
+                inStream.close();
+                Message("Download of " + newFile.getName()+" completed!");
+                Files.copy(tempFile.toPath(), newFile.toPath());
+                tempFile.delete(); 
+                Thread.sleep(100000);*/
+                       
                    } 
           }      
 
@@ -1529,6 +1565,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     }else
                          {
                              videotodownload.put(v, filename);
+                             
                         }
                     
                    } 
@@ -1613,7 +1650,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 
                 });
                 
-                if (DownloadVideo.equalsIgnoreCase("Yes"))
+                if (DownloadVideo.equalsIgnoreCase("Yes")&&videotodownload.size()>0)
                 {
                 try {
                     DownloadVideos(count,numeroMedia,InitialTime);

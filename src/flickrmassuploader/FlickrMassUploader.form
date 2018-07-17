@@ -113,7 +113,7 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="ButtonUpdateFlickrCredentials" min="-2" pref="206" max="-2" attributes="0"/>
+                      <Component id="ButtonUpdateFlickrCredentials" min="-2" pref="284" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -382,7 +382,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="CheckBoxEnableVideos">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Firefox installed"/>
+        <Property name="text" type="java.lang.String" value="Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Chrome installed"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CheckBoxEnableVideosActionPerformed"/>
