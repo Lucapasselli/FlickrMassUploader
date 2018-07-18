@@ -234,6 +234,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             }
         });
 
+        ButtonUpload.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         ButtonUpload.setText("Backup Now!");
         ButtonUpload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -302,6 +303,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncDescription.setText("SyncDescription");
         LabelSyncDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
+        ButtonRestore.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         ButtonRestore.setText("Restore");
         ButtonRestore.setEnabled(false);
         ButtonRestore.addActionListener(new java.awt.event.ActionListener() {
@@ -329,7 +331,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelForceStop.setForeground(new java.awt.Color(255, 0, 51));
         LabelForceStop.setText("Wait until current process finish or press Force Stop to immediately kill the process!");
 
-        CheckBoxEnableVideos.setText("Enable Video restore (only for 64 bit Windows)   .... require flickr credentials and Chrome installed");
+        CheckBoxEnableVideos.setText("Enable Video restore (only for 64 bit Linux or Windows) -> require flickr credentials and Chrome installed");
         CheckBoxEnableVideos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CheckBoxEnableVideosActionPerformed(evt);
@@ -356,7 +358,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(ProgressBarBackup, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
-                            .addComponent(LabelForceStop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(LabelForceStop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -369,50 +372,46 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addComponent(ButtonForceStop, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.PREFERRED_SIZE, 574, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(ButtonUpload)
-                                        .addGap(68, 68, 68)
-                                        .addComponent(ButtonRequestToken)
-                                        .addGap(80, 80, 80))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(TextFieldPhotoDirectory)
-                                            .addComponent(TextFieldApiKey)
-                                            .addComponent(TextFieldSharedSecret)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(0, 62, Short.MAX_VALUE)))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))))
-                        .addGap(17, 17, 17))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(96, 96, 96)
                         .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ButtonRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(CheckBoxRestore, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
+                        .addGap(143, 143, 143))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(ButtonUpload)
+                                .addGap(68, 68, 68)
+                                .addComponent(ButtonRequestToken)
+                                .addGap(80, 80, 80))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(LabelSharedSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(LabelSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(LabelPhotoDirectory, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(TextFieldPhotoDirectory)
+                                    .addComponent(TextFieldApiKey)
+                                    .addComponent(TextFieldSharedSecret)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 62, Short.MAX_VALUE)))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 232, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(ButtonChooseDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ButtonSave, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(17, 17, 17))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(ButtonRestore, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.PREFERRED_SIZE, 819, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(ButtonUpdateFlickrCredentials, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -442,18 +441,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     .addComponent(TextFieldPhotoDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LabelPhotoDirectory)
                     .addComponent(ButtonChooseDirectory))
-                .addGap(10, 10, 10)
-                .addComponent(CheckBoxEnableVideos)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
-                                .addComponent(CheckBoxRestore)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ButtonRestore)))
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ButtonUpload)
@@ -475,13 +466,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addComponent(LabelTimeRemaining))
                     .addComponent(ProgressBarBackup, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 2, Short.MAX_VALUE)
-                        .addComponent(ButtonForceStop))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(LabelForceStop)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(LabelForceStop)
+                    .addComponent(ButtonForceStop))
+                .addGap(18, 18, 18)
+                .addComponent(CheckBoxRestore)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ButtonRestore)
+                    .addComponent(CheckBoxEnableVideos))
+                .addGap(0, 9, Short.MAX_VALUE))
         );
 
         pack();
@@ -667,39 +661,51 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             Password = JOptionPane.showInputDialog("Please insert your Flickr Password",Password);
             JOptionPane.showMessageDialog(null, "<html>Press ok to test credentials<br>"
                     + "and be patient it will take also a minute to test</html>");
-            System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
+            /*System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
             FirefoxBinary firefoxBinary = new FirefoxBinary();
             firefoxBinary.addCommandLineOptions("--headless");
             FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setBinary(firefoxBinary);
-            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);*/
+                       //System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
+            
+            //System.setProperty("https.protocols", "TLSv1.1");
+          /*  FirefoxOptions firefoxOptions = new FirefoxOptions();
+            firefoxOptions.setHeadless(true);
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);*/             
+            ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.setHeadless(true);
+             WebDriver driver = new ChromeDriver(chromeOptions);
+     
             // LOGIN
              try {
-            driver.get("https://login.yahoo.com");
+            driver.get("https://www.flickr.com/signin");
             //Message(driver.getCurrentUrl());
             WebElement username = driver.findElement(By.name("username"));
             username.sendKeys(Username);
             WebElement button = driver.findElement(By.name("signin"));
             button.click();
-            Thread.sleep(3000);
+            Thread.sleep(5000);
             WebElement password = driver.findElement(By.name("password"));
             password.sendKeys(Password);
             WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
             buttonpassword.click();
-            Thread.sleep(3000);
-            driver.navigate().to("https://www.flickr.com/signin");
+            Thread.sleep(5000);
+           /* driver.navigate().to("https://www.flickr.com/signin");
             
-            Thread.sleep(3000);
+            Thread.sleep(3000);*/
             //Message(driver.getCurrentUrl());
             if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
             {
                 driver.quit();
                 JOptionPane.showMessageDialog(null, "<html>Flickr login Failed, please Try again<br></html>");
+                Message("Flickr login Failed, please Try again");
                 
             }
             else{
                 driver.quit();
                 JOptionPane.showMessageDialog(null, "<html>Flickr login OK!!!<br></html>");
+                Message("Flickr login OK!!!");
                 WritePropertiesFile();
             } 
         } catch (InterruptedException ex) {
@@ -892,7 +898,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
      private void DownloadVideos(int[] conta,int numeroMedia, long InitialTime) throws Exception{
           
             //System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
-            Message("Wait... i'm doing the login to Flickr....");
+            Message("Wait... i'm doing the login to Flickr.... it can take a few minutes");
             System.setProperty("https.protocols", "TLSv1.1");
           /*  FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setHeadless(true);
