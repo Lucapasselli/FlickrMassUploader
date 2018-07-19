@@ -1,0 +1,53 @@
+2018-07-19 11:07:36 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:07:36 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:07:36 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:07:36 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:07:36 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:07:36 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:07:36 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:07:36 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:07:36 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:08:29 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:08:29 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:08:29 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:08:29 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:08:29 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:08:29 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:08:29 WARN  FlickrMassUploader:1972 - warn
+2018-07-19 11:08:29 INFO  FlickrMassUploader:1973 - info
+2018-07-19 11:08:29 ERROR FlickrMassUploader:1974 - error
+2018-07-19 11:09:58 INFO  FlickrMassUploader:1971 - Version : null
+2018-07-19 11:09:58 INFO  FlickrMassUploader:1971 - OS : windows 10
+2018-07-19 11:09:58 INFO  FlickrMassUploader:1971 - INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped
+2018-07-19 11:11:27 INFO  FlickrMassUploader:1971 - Version : null
+2018-07-19 11:11:27 INFO  FlickrMassUploader:1971 - OS : windows 10
+2018-07-19 11:11:27 INFO  FlickrMassUploader:1971 - INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped
+2018-07-19 11:17:06 INFO  FlickrMassUploader:1971 - Version : null
+2018-07-19 11:17:06 INFO  FlickrMassUploader:1971 - OS : windows 10
+2018-07-19 11:17:06 INFO  FlickrMassUploader:1971 - INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped
+2018-07-19 11:17:08 INFO  FlickrMassUploader:1971 - Username: luca.passelli
+2018-07-19 11:17:08 INFO  FlickrMassUploader:1971 - Directory to sync -> C:\Users\luca.passelli\Documents\ImmaginiDiProva
+2018-07-19 11:17:08 INFO  FlickrMassUploader:1971 - Sync Type -> NO
+2018-07-19 11:17:08 INFO  FlickrMassUploader:1971 - Retrieving Remote Photo List
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Number of Flickr Albums=16
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Number of Flickr Photos backuped with FlickrMassUploader=128
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Number of Flickr Photos NOT backuped with FlickrMassUploader=1
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Retrieving Local Photo List
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Number photo on your computer (with the exclusion of NoBackupPhoto Folder) -> 128
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Remeber that photos in folder NoBackupPhoto will be not considered for backup
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Number of photo to upload -> 0
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - Backup Finished!
+2018-07-19 11:17:12 INFO  FlickrMassUploader:1971 - -----------------------------------------------
+2018-07-19 11:20:43 INFO  FlickrMassUploader:1971 - Version : null
+2018-07-19 11:20:43 INFO  FlickrMassUploader:1971 - OS : windows 10
+2018-07-19 11:20:43 INFO  FlickrMassUploader:1971 - INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped
+2018-07-19 11:20:48 INFO  FlickrMassUploader:1971 - Username: luca.passelli
+2018-07-19 11:20:48 INFO  FlickrMassUploader:1971 - Retrieving Remote Photo List
+2018-07-19 11:20:53 INFO  FlickrMassUploader:1971 - Number of Flickr Albums=16
+2018-07-19 11:20:53 INFO  FlickrMassUploader:1971 - Number of Flickr Photos backuped with FlickrMassUploader=128
+2018-07-19 11:20:53 INFO  FlickrMassUploader:1971 - Number of Flickr Photos NOT backuped with FlickrMassUploader=1
+2018-07-19 11:20:53 INFO  FlickrMassUploader:1971 - Number of media to download -> 1
+2018-07-19 11:20:53 INFO  FlickrMassUploader:1971 - Downloading photo with ID43040444932to C:\Users\luca.passelli\Documents\ImmaginiDiProva\aaaaa - Copia - Copia\186.JPG
+2018-07-19 11:21:01 INFO  FlickrMassUploader:1971 - Download of 186.JPG completed!
+2018-07-19 11:21:02 INFO  FlickrMassUploader:1971 - Restore Finished!
+2018-07-19 11:21:02 INFO  FlickrMassUploader:1971 - -----------------------------------------------

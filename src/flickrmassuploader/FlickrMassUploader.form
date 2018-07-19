@@ -24,9 +24,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jSeparator2" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="LabelRestoreOptions" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator1" min="-2" pref="447" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="jScrollPane1" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -35,11 +43,10 @@
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="ProgressBarBackup" pref="420" max="32767" attributes="0"/>
                           <Component id="LabelForceStop" max="32767" attributes="0"/>
-                          <Component id="CheckBoxRestore" alignment="0" max="32767" attributes="0"/>
                       </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="LabelStartTime" min="-2" max="-2" attributes="0"/>
                                   <Component id="LabelTimeRemaining" min="-2" max="-2" attributes="0"/>
@@ -47,28 +54,28 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="ButtonForceStop" min="-2" pref="132" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="96" pref="96" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="96" max="-2" attributes="0"/>
                       <Component id="ComboBoxSyncType" min="-2" pref="146" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
                       <Component id="LabelSyncDescription" min="-2" pref="559" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="ButtonSave" pref="121" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="ButtonStop" min="-2" pref="108" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
-                              <Component id="ButtonUpload" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="68" max="-2" attributes="0"/>
-                              <Component id="ButtonRequestToken" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="80" max="-2" attributes="0"/>
+                              <Component id="ButtonUpload" min="-2" pref="123" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="293" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -86,29 +93,41 @@
                                   <Component id="TextFieldSharedSecret" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="LabelUser" min="-2" pref="448" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="62" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="287" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace pref="232" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="ButtonDeleteCredentials" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="ButtonChooseDirectory" linkSize="2" alignment="1" min="-2" pref="121" max="-2" attributes="0"/>
-                          <Component id="ButtonSave" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="ButtonDeleteCredentials" alignment="1" max="32767" attributes="0"/>
+                          <Component id="ButtonChooseDirectory" alignment="1" max="32767" attributes="0"/>
+                          <Component id="ButtonRequestToken" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="ButtonRestore" min="-2" pref="116" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="CheckBoxEnableVideos" min="-2" pref="819" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                  </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="ButtonUpdateFlickrCredentials" min="-2" pref="284" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                              <Component id="CheckBoxRestore" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                              <Component id="ButtonRestore" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="ButtonUpdateFlickrCredentials" min="-2" pref="284" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="540" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="CheckBoxEnableVideos" min="-2" pref="819" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
           </Group>
@@ -127,35 +146,32 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="LabelSharedSecret" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="TextFieldSharedSecret" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ButtonRequestToken" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="LabelUser" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ButtonSave" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+              <Component id="LabelUser" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="TextFieldPhotoDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="LabelPhotoDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ButtonChooseDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="LabelSyncDescription" min="-2" pref="80" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="ButtonUpload" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ButtonRequestToken" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ButtonUpdateFlickrCredentials" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="LabelSyncDescription" min="-2" pref="80" max="-2" attributes="0"/>
+                          <Component id="ButtonSave" min="-2" pref="45" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ButtonUpload" min="-2" pref="35" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="LabelSyncType" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ComboBoxSyncType" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
                       <Component id="ButtonStop" min="-2" pref="44" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -175,14 +191,23 @@
                   <Component id="LabelForceStop" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ButtonForceStop" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="CheckBoxRestore" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
+                  <Component id="LabelRestoreOptions" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="ButtonRestore" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="CheckBoxEnableVideos" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="CheckBoxRestore" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ButtonUpdateFlickrCredentials" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="0" pref="9" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="CheckBoxEnableVideos" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ButtonRestore" alignment="3" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace min="0" pref="19" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -198,6 +223,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="ButtonUpload">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="cc" green="ff" red="cc" type="rgb"/>
+        </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Tahoma" size="11" style="1"/>
         </Property>
@@ -246,7 +274,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="ButtonSave">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Save"/>
+        <Property name="text" type="java.lang.String" value="Save Options"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ButtonSaveActionPerformed"/>
@@ -334,10 +362,16 @@
     </Component>
     <Component class="javax.swing.JButton" name="ButtonRestore">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="cc" type="rgb"/>
+        </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Tahoma" size="11" style="1"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Restore"/>
+        <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+          <Color id="Cursore predefinito"/>
+        </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -387,6 +421,21 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ButtonUpdateFlickrCredentialsActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator1">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" value="Restore"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="LabelRestoreOptions">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="99" green="99" red="99" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="RESTORE OPTIONS"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator2">
     </Component>
   </SubComponents>
 </Form>
