@@ -35,6 +35,7 @@ import org.scribe.model.Verifier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -51,14 +52,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Level;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -66,19 +70,15 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxBinary;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 
 /**
  *
@@ -90,6 +90,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
      * Creates new form FlickrMassUploader
      */
 //    static final Logger logger=Logger.getLogger(FlickrMassUploader.class.getName());
+    static String Version="Beta 1.34";
     static String apiKey = "";
     static String sharedSecret = "";
     static Flickr flickr;
@@ -139,11 +140,28 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static String key = "Pippo345Pluto345";
     
     static int sync = 0;
+    
     //sync=o means no sync
     //sync=1 means sync only directorys
     //sync=2 means full sync
 
     public FlickrMassUploader() {
+        
+        
+        
+        //redirect standard error to logger
+        //Logger logger = Logger.getLogger(FlickrMassUploader.class.getName());
+//...;
+        System.setErr(
+        new PrintStream(
+            new CustomOutputStream(Level.ERROR)
+            )
+        );  
+       /* System.setOut(
+        new PrintStream(
+                new CustomOutputStream(logger,Level.INFO)
+            )
+        );*/
         
         String log4jConfPath = "log4j.properties";
         PropertyConfigurator.configure(log4jConfPath);
@@ -182,9 +200,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelForceStop.setVisible(false);
         ButtonForceStop.setVisible(false);
         if (DownloadVideo.equalsIgnoreCase("Yes")) CheckBoxEnableVideos.setSelected(true);
-        Message("Version : "+version);
-        Message("OS : "+OS);
-        Message("INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped");
+       // Message("Version : "+version);
+        this.setTitle("Flickr Mass Uploader by Luca Passelli                                           Version : "+Version);
+        Message("OS : "+OS,Level.INFO);
+        Message("INFO : From Version Beta 1.25 photos and videos in Folder called NoBackupPhoto will never be backuped",Level.INFO);
+        Message("INFO : For linux users remember to make executable file called cromedriver in the root folder or video download will never work",Level.INFO);
         
 
     }
@@ -212,8 +232,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelSyncType = new javax.swing.JLabel();
         ComboBoxSyncType = new javax.swing.JComboBox<>();
         ButtonChooseDirectory = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        TextAreaLog = new javax.swing.JTextArea();
         ButtonStop = new javax.swing.JButton();
         ProgressBarBackup = new javax.swing.JProgressBar();
         LabelStartTime = new javax.swing.JLabel();
@@ -228,6 +246,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         LabelRestoreOptions = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        TextPaneLog = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -286,10 +306,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 ButtonChooseDirectoryActionPerformed(evt);
             }
         });
-
-        TextAreaLog.setColumns(20);
-        TextAreaLog.setRows(5);
-        jScrollPane1.setViewportView(TextAreaLog);
 
         ButtonStop.setBackground(new java.awt.Color(255, 51, 51));
         ButtonStop.setText("Stop Backup");
@@ -358,6 +374,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         LabelRestoreOptions.setForeground(new java.awt.Color(153, 153, 153));
         LabelRestoreOptions.setText("RESTORE OPTIONS");
 
+        TextPaneLog.setEditable(false);
+        jScrollPane2.setViewportView(TextPaneLog);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -371,9 +390,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addComponent(LabelRestoreOptions)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -390,14 +406,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addGap(0, 0, Short.MAX_VALUE)
                                 .addComponent(ButtonForceStop, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(96, 96, 96)
-                        .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(32, 32, 32)
-                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ButtonSave, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-                        .addGap(18, 18, 18))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -441,7 +449,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addGap(540, 540, 540))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.PREFERRED_SIZE, 819, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10))))))
+                                .addGap(10, 10, 10))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(96, 96, 96)
+                        .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(32, 32, 32)
+                        .addComponent(LabelSyncDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 559, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ButtonSave, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                        .addGap(18, 18, 18))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane2)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -478,8 +497,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGap(57, 57, 57)
                         .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(LabelStartTime)
@@ -583,18 +602,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             }
             //  System.out.println(Directory);
         } catch (IOException ex) {
-            Message("Error secting Directory -> " + ex.getMessage());
+            Message("Error secting Directory -> " + ex.getMessage(),Level.ERROR);
         } catch (java.lang.InternalError ex) {
             //This error occour when the chooser can't open an existing directory
             //If this occour the chooser must open the root directory
-            Message("Error secting Directory -> " + ex.getMessage());
+            Message("Error secting Directory -> " + ex.getMessage(),Level.ERROR);
             fc.setCurrentDirectory(new java.io.File("."));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == 0) {
                 try {
                     Directory = fc.getSelectedFile().getCanonicalPath();
                 } catch (IOException ex1) {
-                    Message ("Error choosing directory -> "+ex1.getMessage());
+                    Message ("Error choosing directory -> "+ex1.getMessage(),Level.ERROR);
                     //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex1);
                 }
                 TextFieldPhotoDirectory.setText(Directory);
@@ -652,7 +671,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private void ButtonForceStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonForceStopActionPerformed
         // TODO add your handling code here:
         process.stop();
-        Message("Forced Backup Interruption");
+        Message("Forced Backup Interruption",Level.INFO);
     }//GEN-LAST:event_ButtonForceStopActionPerformed
 
     private void ButtonRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonRestoreActionPerformed
@@ -685,6 +704,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private void ButtonUpdateFlickrCredentialsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonUpdateFlickrCredentialsActionPerformed
         
             // TODO add your handling code here:
+            
                                     if (OS.lastIndexOf("windows")>-1){
                 System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
             }else
@@ -706,7 +726,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             //System.setProperty("https.protocols", "TLSv1.1");
           /*  FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setHeadless(true);
-            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);*/             
+            FirefoxDriver driver = new FirefoxDriver(firefoxOptions);*/
+            Message("Test Flickr Credentials Started",Level.INFO);
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.setHeadless(true);
              WebDriver driver = new ChromeDriver(chromeOptions);
@@ -733,22 +754,22 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             {
                 driver.quit();
                 JOptionPane.showMessageDialog(null, "<html>Flickr login Failed, please Try again<br></html>");
-                Message("Flickr login Failed, please Try again");
+                Message("Flickr login Failed, please Try again",Level.INFO);
                 
             }
             else{
                 driver.quit();
                 JOptionPane.showMessageDialog(null, "<html>Flickr login OK!!!<br></html>");
-                Message("Flickr login OK!!!");
+                Message("Flickr login OK!!!",Level.INFO);
                 WritePropertiesFile();
             } 
         } catch (InterruptedException ex) {
             //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
-            Message ("Error Sleeping -> "+ex.getMessage());
+            Message ("Error Sleeping -> "+ex.getMessage(),Level.ERROR);
             driver.quit();
         }  catch (org.openqa.selenium.WebDriverException ex) {
             //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
-            Message ("Error retrieving information from site: -> "+ex.getMessage());
+            Message ("Error retrieving information from site: -> "+ex.getMessage(),Level.ERROR);
             driver.quit();
         }
     }//GEN-LAST:event_ButtonUpdateFlickrCredentialsActionPerformed
@@ -792,6 +813,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     GraphicsOn = false;
                     if (args[0].equalsIgnoreCase("/backup")) {
                         gr = new FlickrMassUploader();
+                        gr.Message("Program started in batch mode with BACKUP option",Level.INFO);
                         StopProcess = false;
                         boolean connectionOK;
                         connectionOK = gr.auth();
@@ -801,6 +823,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         gr.dispose();
                     } else if (args[0].equalsIgnoreCase("/restore")) {
                         gr = new FlickrMassUploader();
+                        gr.Message("Program started in batch mode with RESTORE option",Level.INFO);
                         StopProcess = false;
                         boolean connectionOK;
                         connectionOK = gr.auth();
@@ -835,15 +858,15 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Nsid = auth.getUser().getId();
                 User = auth.getUser().getUsername();
                 // This token can be used until the user revokes it.
-                Message("Username: " + auth.getUser().getUsername());
+                Message("Username: " + auth.getUser().getUsername(),Level.INFO);
 
             } catch (FlickrException ex) {
-                Message("Auth2 error: " + ex.getErrorMessage() + " -> " + ex.getErrorCode());
-                Message("Request new authentication in progress...");
+                Message("Auth2 error: " + ex.getErrorMessage() + " -> " + ex.getErrorCode(),Level.ERROR);
+                Message("Request new authentication in progress...",Level.ERROR);
                 //if is not possible to have authentication you need new credentials
                 connectionOK = FirstAuth();
             } catch (com.flickr4java.flickr.FlickrRuntimeException ex) {
-                Message("Auth2 error: " + ex.getMessage() + " -> Probably you have no internet connection or the site is not avaiable");
+                Message("Auth2 error: " + ex.getMessage() + " -> Probably you have no internet connection or the site is not avaiable",Level.ERROR);
                 connectionOK = false;
 
             }
@@ -870,22 +893,22 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             authInterface = flickr.getAuthInterface();
 
             Token token = authInterface.getRequestToken();
-            Message("token: " + token);
+            Message("token: " + token,Level.INFO);
 
             String url = authInterface.getAuthorizationUrl(token, Permission.DELETE);
             if (Desktop.isDesktopSupported()) {
                 try {
                     Desktop.getDesktop().browse(new URI(url));
                 } catch (URISyntaxException ex) {
-                    Message("Error Getting URL: " + ex.getMessage());
+                    Message("Error Getting URL: " + ex.getMessage(),Level.ERROR);
                 } catch (IOException ex) {
-                    Message("Error Getting URL: " + ex.getMessage());
+                    Message("Error Getting URL: " + ex.getMessage(),Level.ERROR);
                 }
             }
 
             String n = JOptionPane.showInputDialog("Please accept authetincation request from your broswer and then paste here your Confirmation Code:");
             ConfirmationCode = n;
-            Message("Pasted Confirmation Code:" + ConfirmationCode);
+            Message("Pasted Confirmation Code:" + ConfirmationCode,Level.INFO);
             String tokenKey = ConfirmationCode;
             if (ConfirmationCode != null) {
                 try {
@@ -900,17 +923,17 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     //Message("Secret: " + requestToken.getSecret());
                     //Message("nsid: " + auth.getUser().getId());
                     //Message("Realname: " + auth.getUser().getRealName());
-                    Message("Username: " + auth.getUser().getUsername());
+                    Message("Username: " + auth.getUser().getUsername(),Level.INFO);
                     //Message("Permission: " + auth.getPermission().getType());
                     WritePropertiesFile();
-                    Message("Authentication success");
+                    Message("Authentication success",Level.INFO);
                     JOptionPane.showMessageDialog(null, "Authentication Success, now you can upload your files");
                 } catch (FlickrException ex) {
-                    Message("First Authentication error: " + ex.getErrorMessage() + " -> " + ex.getErrorCode());
+                    Message("First Authentication error: " + ex.getErrorMessage() + " -> " + ex.getErrorCode(),Level.ERROR);
                     JOptionPane.showMessageDialog(null, "Confirmation Code:" + ConfirmationCode + " seems to be wrong, please retry the authentication");
                     connectionOK = false;
                 } catch (org.scribe.exceptions.OAuthException ex) {
-                    Message("First Authentication error: " + ex.getMessage());
+                    Message("First Authentication error: " + ex.getMessage(),Level.ERROR);
                     JOptionPane.showMessageDialog(null, "Confirmation Code:" + ConfirmationCode + " seems to be wrong, please retry the authentication");
                     connectionOK = false;
                 }
@@ -939,7 +962,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         System.setProperty("webdriver.chrome.driver", "chromedriver"); 
                      }       
             //System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-            Message("Wait... i'm doing the login to Flickr.... it can take a few minutes");
+            Message("Wait... i'm doing the login to Flickr.... it can take a few minutes",Level.INFO);
             System.setProperty("https.protocols", "TLSv1.1");
           /*  FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setHeadless(true);
@@ -970,11 +993,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                // Thread.sleep(5000);
                 if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
                     {
-                           Message ("Flickr login Failed, please press button 'Update Flickr credentials and Test' and try again");
-                           Message ("FLICKR VIDEO DOWNLOAD FAILED!!!");
+                           Message ("Flickr login Failed, please press button 'Update Flickr credentials and Test' and try again",Level.INFO);
+                           Message ("FLICKR VIDEO DOWNLOAD FAILED!!!",Level.INFO);
                 }
                 else{
-                Message ("Flickr login OK!!!");
+                Message ("Flickr login OK!!!",Level.INFO);
                 
                 
                 // Send cookies to apache http client to mantain the authentication 
@@ -1007,7 +1030,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         conta[0]++;
                         
                         HttpGet httpGet = new HttpGet("https://www.flickr.com/video_download.gne?id="+k);
-                        Message("Downloding file form: " + "https://www.flickr.com/video_download.gne?id="+k+ "        File Name -> "+v);
+                        Message("Downloading video with ID "+k+" from: " + "https://www.flickr.com/video_download.gne?id="+k+" to "+v,Level.INFO);
                         HttpResponse response = httpClient.execute(httpGet);
                         
                         HttpEntity entity = response.getEntity();
@@ -1027,10 +1050,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             String Date= remoteLastModifiedDate.get(k);
                             if (Date!=null&&!Date.equalsIgnoreCase("")) OutputFile.setLastModified(sdf.parse(Date).getTime());
                             
-                            Message("Downloded File -> " +v+ "File Lenght -> "+OutputFile.length() + " bytes. ");
+                            Message("Download of " +OutputFile.getName()+ " comleted! ---- File Lenght : "+OutputFile.length() + " bytes. ",Level.INFO);
+                            //Download of 186.JPG completed!
                         }
                         else {
-                            Message("Download failed!");
+                            Message("Download failed!",Level.INFO);
                         }
                         if (GraphicsOn) {
                             ProgressBarBackup.setValue(conta[0]);
@@ -1042,9 +1066,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         
                         
                     } catch (IOException ex) {
-                        Message ("Error Downloadinf Videos -> "+ex.getMessage());
+                        Message ("Error Downloading Videos -> "+ex.getMessage(),Level.ERROR);
                     }catch (ParseException ex) {
-                        Message ("Error Downloadinf Videos -> "+ex.getMessage());
+                        Message ("Error Downloading Videos -> "+ex.getMessage(),Level.ERROR);
                             }
                     } 
                 
@@ -1052,7 +1076,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 }
 
         } catch (org.openqa.selenium.WebDriverException ex) {
-            Message ("Error retrieving information from site: -> "+ex.getMessage());
+            Message ("Error retrieving information from site: -> "+ex.getMessage(),Level.ERROR);
             driver.quit();
             //service.stop();
         }
@@ -1196,7 +1220,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
     
     
-    public void downloadfile(String photoID,File newFile)throws Exception,FlickrException{
+    public void DownloadPhoto(String photoID,File newFile)throws Exception,FlickrException{
             if (!StopProcess) {
 
                 PhotosInterface photoI=flickr.getPhotosInterface();
@@ -1207,7 +1231,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 File tempFile=new File(newFile.getCanonicalPath()+"_temp");
                 //System.out.println(p.getLargeUrl());
                 if (!p.getMedia().equalsIgnoreCase("video")){
-                Message("Downloading photo with ID "+photoID + " to " + newFile.getCanonicalPath());
+                Message("Downloading photo with ID "+photoID + " to " + newFile.getCanonicalPath(),Level.INFO);
                 BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.ORIGINAL));
                 FileOutputStream fos = new FileOutputStream(tempFile);
                 int read;
@@ -1218,7 +1242,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 fos.flush();
                 fos.close();
                 inStream.close();
-                Message("Download of " + newFile.getName()+" completed!");
+                Message("Download of " +newFile.getName()+ " comleted! ---- File Lenght : "+newFile.length() + " bytes. ",Level.INFO);
                 Files.copy(tempFile.toPath(), newFile.toPath());
                 tempFile.delete();
                 if (StopProcess) tempFile.delete();
@@ -1267,9 +1291,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 File f = new File(filename);
                 long fileSizeMB = f.length()/1024;
                 metaData.setDescription("OrigFileName:=" + filename.substring(Directory.length()) + "\n"+"DateLastModified:="+sdf.format(f.lastModified())+"\n");
-                    Message ("File Size: "+String.valueOf(fileSizeMB)+" KB");
+                    Message ("File Size: "+String.valueOf(fileSizeMB)+" KB",Level.INFO);
                     photoId = uploader.upload(f, metaData);
-                    Message(" File : " + filename + " uploaded: photoId = " + photoId);
+                    Message(" File : " + filename + " uploaded: photoId = " + photoId,Level.INFO);
 
                 PhotosetsInterface psi = flickr.getPhotosetsInterface();
 
@@ -1375,7 +1399,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     {
                                         if (remotephotoswithdata.get(Album + "|" + Filename)!=null) 
                                             {
-                                                Message("WARNING found duplicate on Album:"+Album+" PhotoID:"+photoID+" Filename:"+Filename);
+                                                Message("WARNING found duplicate on Album:"+Album+" PhotoID:"+photoID+" Filename:"+Filename,Level.INFO);
                                             }
                                         else
                                             {
@@ -1421,10 +1445,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     }
                         }
                         
-                        Message("Number of Flickr Albums="+NAlbums);
-                        Message("Number of Flickr Photos="+NPhotos);
+                        Message("Number of Flickr Albums="+NAlbums,Level.INFO);
+                        Message("Number of Flickr Photos="+NPhotos,Level.INFO);
             } catch (FlickrException ex) {
-                Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
             }
 
         }
@@ -1462,7 +1486,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 try {
                                 Thread.sleep(100);
                                 } catch (InterruptedException ex) {
-                                Message("Error Sleeping : "+ex.getMessage());
+                                Message("Error Sleeping : "+ex.getMessage(),Level.ERROR);
                                 }
                                 }  
                                 
@@ -1482,7 +1506,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 try {
                                 Thread.sleep(100);
                                 } catch (InterruptedException ex) {
-                                Message("Error Sleeping : "+ex.getMessage());
+                                Message("Error Sleeping : "+ex.getMessage(),Level.ERROR);
                                 }
                                 
                                 
@@ -1502,7 +1526,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 try {
                                 Thread.sleep(100);
                                 } catch (InterruptedException ex) {
-                                Message("Error Sleeping : "+ex.getMessage());
+                                Message("Error Sleeping : "+ex.getMessage(),Level.ERROR);
                                 }
                                 }
                                 
@@ -1529,12 +1553,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     }
                         }
                         
-                        Message("Number of Flickr Albums="+NRAlbums);
-                        Message("Number of Flickr Photos backuped with FlickrMassUploader="+NRPhotos);
-                        Message("Number of Flickr Photos NOT backuped with FlickrMassUploader="+NRnoBPhotos);
+                        Message("Number of Flickr Albums="+NRAlbums,Level.INFO);
+                        Message("Number of Flickr Media backuped with FlickrMassUploader="+NRPhotos,Level.INFO);
+                        Message("Number of Flickr Media NOT backuped with FlickrMassUploader="+NRnoBPhotos,Level.INFO);
                         
             } catch (FlickrException ex) {
-                Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                Message("Error getting Photo List on Flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
             }  
 
         }
@@ -1547,7 +1571,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             try {
 
                 PhotosInterface photoI=flickr.getPhotosInterface();
-                Message ("Photo:"+photoI.getPhoto(PHOTOID).getTitle()+" ID:"+PHOTOID+" with old style LastModifiedDate Format, I'll upgrade it!");
+                Message ("Photo:"+photoI.getPhoto(PHOTOID).getTitle()+" ID:"+PHOTOID+" with old style LastModifiedDate Format, I'll upgrade it!",Level.INFO);
                 
                             Collection<Tag> tags=photoI.getPhoto(PHOTOID).getTags();
 
@@ -1555,19 +1579,19 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             if (tag.getRaw().split(":=")[0].equalsIgnoreCase("DateLastModified")&&tag.getRaw().split(":=").length>1) 
                             {
                                 photoI.removeTag(tag.getId());
-                                Message ("Old Tag Deleted -> "+tag.getRaw());
+                                Message ("Old Tag Deleted -> "+tag.getRaw(),Level.INFO);
 
                             }
                             }
                 String tags1[]=new String[1];
                 tags1[0]="DateLastModified:="+DATE;
                 photoI.addTags(PHOTOID, tags1);
-                Message ("New Tag Created -> "+tags1[0]);
+                Message ("New Tag Created -> "+tags1[0],Level.INFO);
 
                 
                     
             } catch (FlickrException ex) {
-                Message("Error in tag update -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                Message("Error in tag update -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
             }
 
         }
@@ -1580,6 +1604,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
         if (!StopProcess) {
             Long InitialTime = System.currentTimeMillis();
+            Message("Restore Started",Level.INFO);
             LabelTimeRemaining.setText("Time Remaining:");
             remotealbums = new HashMap<>();
             phototoupload = new HashMap<>();
@@ -1593,7 +1618,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             //authentication    
             RequestContext rc = RequestContext.getRequestContext();
             rc.setAuth(auth);
-            Message("Retrieving Remote Photo List");
+            Message("Retrieving Remote Photo List",Level.INFO);
             RemotePhotoList2();
             remotephotoswithdata.forEach((k, v)
                 -> {
@@ -1619,7 +1644,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                     } 
                 catch (Exception ex) {
-                        Message("Error verifiing files:" + v + "   ->   " + ex.getMessage());
+                        Message("Error verifiing files:" + v + "   ->   " + ex.getMessage(),Level.ERROR);
                     }
                      
                 });
@@ -1648,7 +1673,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
                     } 
                 catch (Exception ex) {
-                        Message("Error verifiing files:" + v + "   ->   " + ex.getMessage());
+                        Message("Error verifiing files:" + v + "   ->   " + ex.getMessage(),Level.ERROR);
                     }
                      
                 });
@@ -1665,18 +1690,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
                 //Message("Number photo on your computer -> " + localphotos.size());
-                Message("Number of media to download -> " + numeroMedia);
-                
+                Message("Number of photo to download -> " + phototodownload.size(),Level.INFO);
+                Message("Number of video to download -> " + videotodownload.size(),Level.INFO);
                 
                 final int[] count = {0};
-                
+                if (phototodownload.size()>0) Message("Start Downloading Photos",Level.INFO);
                 phototodownload.forEach((k, v)
                 -> {
                     count[0]++;
                     try {
                     String Date= remoteLastModifiedDate.get(k);
                     File file=new File (v);
-                    downloadfile(k,file);
+                    DownloadPhoto(k,file);
                     if (Date!=null&&!Date.equalsIgnoreCase("")) file.setLastModified(sdf.parse(Date).getTime());
                     if (GraphicsOn) {
                             ProgressBarBackup.setValue(count[0]);
@@ -1685,40 +1710,43 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     + String.valueOf(TimeUnit.MILLISECONDS.toMinutes(((System.currentTimeMillis() - InitialTime) / (long) count[0]) * (numeroMedia - count[0]))) + " minutes");
                         }
                 } catch (FlickrException ex) {
-                        Message("Error downloading file:" + k + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage());
+                        Message("Error downloading file:" + k + "   ->   " + ex.getErrorMessage()+"    "+ex.getMessage(),Level.ERROR);
                        // Message("Error downloading file:" + v + "   ->   " + ex.getMessage());
                     }
                     catch (Exception ex) {
-                    Message("Error downloading file:" + k + "   ->   " + ex.getMessage());
+                    Message("Error downloading file:" + k + "   ->   " + ex.getMessage(),Level.ERROR);
                 }
                     
                     
                     
                 
                 });
+                if (phototodownload.size()>0) Message("Downloading Photos Finished!",Level.INFO);
                 
                 if (DownloadVideo.equalsIgnoreCase("Yes")&&videotodownload.size()>0)
                 {
                 try {
+                    if (videotodownload.size()>0) Message("Start Downloading Videos",Level.INFO);
                     DownloadVideos(count,numeroMedia,InitialTime);
+                    if (videotodownload.size()>0) Message("Downloading Videos Finished!",Level.INFO);
                 } catch (Exception ex) {
                     //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
-                    Message("Error downloading videos from flickr -> "+ex.getMessage());
+                    Message("Error downloading videos from flickr -> "+ex.getMessage(),Level.ERROR);
                 }
                 }
                 
                 
             
             if (StopProcess) {
-            Message("Restore Stopped by User!");
-            Message("-------------------------------------------------");
+            Message("Restore Stopped by User!",Level.INFO);
+            Message("-------------------------------------------------",Level.INFO);
             if (GraphicsOn) {
                 LabelTimeRemaining.setText("RESTORE STOPPED BY USER!!!");
 
             }
         } else {
-            Message("Restore Finished!");
-            Message("-----------------------------------------------");
+            Message("Restore Finished!",Level.INFO);
+            Message("-----------------------------------------------",Level.INFO);
             if (GraphicsOn) {
                 LabelTimeRemaining.setText("RESTORE FINISHED at "+String.valueOf(new Timestamp(System.currentTimeMillis())));
                 JOptionPane.showMessageDialog(null, "RESTORE FINISHED!!!");
@@ -1765,15 +1793,16 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
         if (!StopProcess) {
-            Message("Directory to sync -> " + Directory);
+            Message("Backup Started",Level.INFO);
+            Message("Directory to sync -> " + Directory,Level.INFO);
             if (sync == 0) {
-                Message("Sync Type -> NO");
+                Message("Sync Type -> NO",Level.INFO);
             }
             if (sync == 1) {
-                Message("Sync Type -> SYNC");
+                Message("Sync Type -> SYNC",Level.INFO);
             }
             if (sync == 2) {
-                Message("Sync Type -> FULLSYNC");
+                Message("Sync Type -> FULLSYNC",Level.INFO);
             }
 
             Long InitialTime = System.currentTimeMillis();
@@ -1795,10 +1824,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             try {
                 //Faccio l'elenco degli album e delle foto su flickr
 
-                Message("Retrieving Remote Photo List");
+                Message("Retrieving Remote Photo List",Level.INFO);
                 RemotePhotoList2();
                 //elenco fotolocali non fa altro che compilare l'hasmap fotolocali con l'elenco delle foto sull'hd
-                Message("Retrieving Local Photo List");
+                Message("Retrieving Local Photo List",Level.INFO);
                 LocalPhotoList(Directory, 0, Directory);
 
  
@@ -1841,9 +1870,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     LabelStartTime.setText("Started Time: "
                             + String.valueOf(new Timestamp(InitialTime)));
                 }
-                Message("Number photo on your computer (with the exclusion of NoBackupPhoto Folder) -> " + localphotos.size());
-                Message("Remeber that photos in folder NoBackupPhoto will be not considered for backup");
-                Message("Number of photo to upload -> " + numeroFoto);
+                Message("Number photo on your computer (with the exclusion of NoBackupPhoto Folder) -> " + localphotos.size(),Level.INFO);
+                Message("Remeber that photos in folder NoBackupPhoto will be not considered for backup",Level.INFO);
+                Message("Number of photo to upload -> " + numeroFoto,Level.INFO);
 
                 final int[] count = {0};
                 phototoupload.forEach((k, v)
@@ -1855,7 +1884,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         // in this case we block the online operation
                         if (!StopProcess) {
 
-                            Message("Uploading file " + v + " to the cloud " + count[0] + " of " + numeroFoto);
+                            Message("Uploading file " + v + " to the cloud " + count[0] + " of " + numeroFoto,Level.INFO);
                             uploadfile(v, makeSafeFilename(k.substring(k.lastIndexOf("|")+1)), k.substring(0, k.lastIndexOf("|")));
                             //La funzione di upload si occuperà del controllo e la gestione degli album
                         }
@@ -1866,9 +1895,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     + String.valueOf(TimeUnit.MILLISECONDS.toMinutes(((System.currentTimeMillis() - InitialTime) / (long) count[0]) * (numeroFoto - count[0]))) + " minutes");
                         }
                     } catch (FlickrException ex) {
-                        Message("Error uploading file:" + v + "   ->   " + ex.getErrorMessage());
+                        Message("Error uploading file:" + v + "   ->   " + ex.getErrorMessage(),Level.ERROR);
                     } catch (Exception ex) {
-                        Message("Error uploading file:" + v + "   ->   " + ex.getMessage());
+                        Message("Error uploading file:" + v + "   ->   " + ex.getMessage(),Level.ERROR);
                     }
 
                 });
@@ -1879,13 +1908,13 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         -> {
                                     try {
                                         if (!StopProcess){
-                                    Message (k+" was reuploaded becouse the last modified date of the file was changed");
-                                    Message("Deleting old copy of the file from the cloud");
+                                    Message (k+" was reuploaded becouse the last modified date of the file was changed",Level.INFO);
+                                    Message("Deleting old copy of the file from the cloud",Level.INFO);
                                     flickr.getPhotosInterface().delete(v); 
                                     }
                                      } catch (FlickrException ex) {
 
-                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
                             }
                                 });
 
@@ -1906,12 +1935,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 // in this case we block the online operation
                                 if (!StopProcess) {
                                     //Delete photos that are no longer present local
-                                    Message("Deleting file " + k + " from the cloud");
+                                    Message("Deleting file " + k + " from the cloud",Level.INFO);
                                     flickr.getPhotosInterface().delete(v);
                                 }
                             } catch (FlickrException ex) {
 
-                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
                             }
                         }
                     }
@@ -1929,32 +1958,32 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 // in this case we block the online operation
                                 if (!StopProcess) {
                                     //Delete photos that are no longer present local
-                                    Message("Deleting file " + k + " from the cloud");
+                                    Message("Deleting file " + k + " from the cloud",Level.INFO);
                                     flickr.getPhotosInterface().delete(v);
                                 }
                             } catch (FlickrException ex) {
 
-                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage());
+                                Message("Error deleting file from flickr -> " + ex.getErrorCode() + ":" + ex.getErrorMessage(),Level.ERROR);
                             }
                         }
                     }
                 });
 
             } catch (IOException ex) {
-                Message("IO Error   ->   " + ex.getMessage());
+                Message("IO Error   ->   " + ex.getMessage(),Level.ERROR);
             }
 
         }
         if (StopProcess) {
-            Message("Backup Stopped by User!");
-            Message("-------------------------------------------------");
+            Message("Backup Stopped by User!",Level.INFO);
+            Message("-------------------------------------------------",Level.INFO);
             if (GraphicsOn) {
                 LabelTimeRemaining.setText("BACKUP STOPPED BY USER!!!");
 
             }
         } else {
-            Message("Backup Finished!");
-            Message("-----------------------------------------------");
+            Message("Backup Finished!",Level.INFO);
+            Message("-----------------------------------------------",Level.INFO);
             if (GraphicsOn) {
                 LabelTimeRemaining.setText("BACKUP FINISHED at "+String.valueOf(new Timestamp(System.currentTimeMillis())));
                 JOptionPane.showMessageDialog(null, "BACKUP FINISHED!!!");
@@ -1962,17 +1991,30 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
     }
 
-    public void Message(String messaggio) {
-        if (GraphicsOn) {
-            TextAreaLog.append(String.valueOf(sdf2.format(System.currentTimeMillis()))+" : "+messaggio + "\n");
-            TextAreaLog.setCaretPosition(TextAreaLog.getDocument().getLength());
-            //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, messaggio);
-            //Logger.getLogger(FlickrMassUploader.class.getName()).info(messaggio);
-            LogFactory.getLog(FlickrMassUploader.class.getName()).info(messaggio);
+    public void Message(String messaggio,Level level) {
 
+        String MessaggioCompleto=String.valueOf(sdf2.format(System.currentTimeMillis()))+" : "+level.toString()+" : "+messaggio + "\n";
+        if (GraphicsOn) {
+            try {
+                
+                Document doc = TextPaneLog.getDocument();
+                SimpleAttributeSet keyWord = new SimpleAttributeSet();
+                
+                if (level.toString().equalsIgnoreCase("ERROR"))
+                    StyleConstants.setForeground(keyWord, java.awt.Color.RED);
+                else
+                    StyleConstants.setForeground(keyWord, java.awt.Color.BLACK);
+                
+                doc.insertString(doc.getLength(), MessaggioCompleto,keyWord);
+
+                Logger.getLogger(FlickrMassUploader.class.getName()).log(level, messaggio);
+            } catch (BadLocationException ex) {
+                java.util.logging.Logger.getLogger(FlickrMassUploader.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
         } else {
-            System.out.println(String.valueOf(sdf2.format(System.currentTimeMillis()))+" : "+messaggio);
-            LogFactory.getLog(FlickrMassUploader.class.getName()).info(messaggio);
+            System.out.print(MessaggioCompleto);
+            //LogFactory.getLog(FlickrMassUploader.class.getName()).info(messaggio);
+            Logger.getLogger(FlickrMassUploader.class.getName()).log(level, messaggio);
         }
     }
 
@@ -2030,7 +2072,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             } catch (java.lang.NullPointerException ex) {
 
-                Message("Error getting information of folder " + dir + " -> " + ex.getMessage());
+                Message("Error getting information of folder " + dir + " -> " + ex.getMessage(),Level.ERROR);
             }
 
         }
@@ -2055,9 +2097,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             prop.store(output, null);
             output.close();
         } catch (FileNotFoundException ex) {
-            Message("Error Writing properties file -> " + ex.getMessage());
+            Message("Error Writing properties file -> " + ex.getMessage(),Level.ERROR);
         } catch (IOException ex) {
-            Message("Error Writing properties file -> " + ex.getMessage());
+            Message("Error Writing properties file -> " + ex.getMessage(),Level.ERROR);
         }
     }
 
@@ -2101,9 +2143,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             
             
         } catch (FileNotFoundException ex) {
-            Message("Error reading Property file -> " + ex.getMessage());
+            Message("Error reading Property file -> " + ex.getMessage(),Level.ERROR);
         } catch (IOException ex) {
-            Message("Error reading Property File -> " + ex.getMessage());
+            Message("Error reading Property File -> " + ex.getMessage(),Level.ERROR);
         }
 
     }
@@ -2247,7 +2289,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     {
                                         if (remotephotoswithdata.get(Album + "|" + Filename)!=null)
                                         {
-                                            Message("WARNING found duplicate on Album:"+Album+" PhotoID:"+photoID+" Filename:"+Filename);
+                                            Message("WARNING found duplicate on Album:"+Album+" PhotoID:"+photoID+" Filename:"+Filename,Level.WARN);
                                         }
                                         else
                                         {
@@ -2281,8 +2323,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     
                         NRAlbums++;
                     } catch (FlickrException ex) {
-                        Message ("Error retreiving photo list:"+ex.getErrorMessage());
-                        Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+                        Message ("Error retreiving photo list:"+ex.getErrorMessage(),Level.ERROR);
+                        //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     NumProcess--;
                     
@@ -2297,7 +2339,40 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
             
             
-            
+      class CustomOutputStream extends OutputStream 
+{
+    Logger logger;
+    Level level;
+    StringBuilder stringBuilder;
+     
+    //public CustomOutputStream(Logger logger, Level level)
+    public CustomOutputStream(Level level)
+    {
+        //this.logger = logger;
+        this.level = level;
+        stringBuilder = new StringBuilder();
+    }
+     
+    @Override
+    public final void write(int i) throws IOException 
+    {
+        char c = (char) i;
+        if(c == '\r' || c == '\n')
+        {
+            if(stringBuilder.length()>0)
+            {
+               // Logger.getLogger(FlickrMassUploader.class.getName()).log(level, Restore);
+                if (stringBuilder.toString().contains("Starting ChromeDriver")||stringBuilder.toString().contains("Only local connections are allowed")||stringBuilder.toString().contains("org.openqa.selenium.remote.ProtocolHandshake createSession")||stringBuilder.toString().contains("Detected dialect"))
+                Message(stringBuilder.toString(),Level.INFO);
+                else Message(stringBuilder.toString(),level);
+                //logger.log(level,stringBuilder.toString());
+                stringBuilder = new StringBuilder();
+            }
+        }
+        else
+            stringBuilder.append(c);
+    }
+}      
             
             
             
@@ -2319,7 +2394,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(FlickrMassUploader.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         ButtonUpload.setEnabled(true);
@@ -2362,11 +2437,11 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JLabel LabelTimeRemaining;
     private javax.swing.JLabel LabelUser;
     private javax.swing.JProgressBar ProgressBarBackup;
-    private javax.swing.JTextArea TextAreaLog;
     private javax.swing.JTextField TextFieldApiKey;
     private javax.swing.JTextField TextFieldPhotoDirectory;
     private javax.swing.JTextField TextFieldSharedSecret;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextPane TextPaneLog;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables
