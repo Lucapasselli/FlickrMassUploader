@@ -814,6 +814,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     if (args[0].equalsIgnoreCase("/backup")) {
                         gr = new FlickrMassUploader();
                         gr.Message("Program started in batch mode with BACKUP option",Level.INFO);
+                        gr.Message("Version : "+Version,Level.INFO);
                         StopProcess = false;
                         boolean connectionOK;
                         connectionOK = gr.auth();
@@ -824,6 +825,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     } else if (args[0].equalsIgnoreCase("/restore")) {
                         gr = new FlickrMassUploader();
                         gr.Message("Program started in batch mode with RESTORE option",Level.INFO);
+                        gr.Message("Version : "+Version,Level.INFO);
                         StopProcess = false;
                         boolean connectionOK;
                         connectionOK = gr.auth();
