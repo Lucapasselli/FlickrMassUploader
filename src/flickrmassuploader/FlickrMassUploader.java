@@ -43,10 +43,12 @@ import java.security.Key;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1243,9 +1245,28 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     {
                 if (CheckBoxRestoreTags.isSelected())
                     {
+                       //compare flickr tags with originals tags and add the new ones to the file
+                       List TagsToWrite=new ArrayList();
                        Collection<Tag> tags=p.getTags();
                        Metadata meta=new Metadata();
-                       meta.WriteTags(tempFile.getCanonicalPath(), newFile.getCanonicalPath(), tags);
+                       List TagOri=meta.getTags(tempFile.getCanonicalPath());
+                       Iterator tagi=tags.iterator();
+                       Iterator tagorii=TagOri.iterator();
+                       while (tagi.hasNext())
+                       {
+                           boolean ToWrite=true;
+                           Tag tag=(Tag)tagi.next();
+                           String TextTag=tag.getRaw();
+                           while (tagorii.hasNext())
+                           {
+                               if (tagorii.next().toString().equalsIgnoreCase(TextTag))
+                                {
+                                    ToWrite=false;
+                                }   
+                           }
+                           if (ToWrite) TagsToWrite.add(TextTag);
+                       }
+                       meta.WriteTags(tempFile.getCanonicalPath(), newFile.getCanonicalPath(), TagsToWrite);
                     }
                 else
                     {

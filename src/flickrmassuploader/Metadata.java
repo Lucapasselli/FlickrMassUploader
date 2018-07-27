@@ -121,7 +121,7 @@ public class Metadata {
            
            
            
-    public void WriteTags(String FileOri,String FileDest,Collection<Tag> Tags)
+    public void WriteTags(String FileOri,String FileDest,List Tags)
     {   
 
        
@@ -141,14 +141,14 @@ public class Metadata {
        
     }
         
-    		private static List<IPTCDataSet> createIPTCDataSet(Collection<Tag> Tags) {
+    		private static List<IPTCDataSet> createIPTCDataSet(List Tags) {
 			List<IPTCDataSet> iptcs = new ArrayList<IPTCDataSet>();
                         Iterator Tagsi=Tags.iterator();
                         while(Tagsi.hasNext())
                         {
                             
-                            Tag tag=(Tag)Tagsi.next();
-                            iptcs.add(new IPTCDataSet(IPTCApplicationTag.KEY_WORDS, tag.getRaw()));
+                            String tag=Tagsi.next().toString();
+                            iptcs.add(new IPTCDataSet(IPTCApplicationTag.KEY_WORDS,tag));
 			}
 			return iptcs;
 		}
