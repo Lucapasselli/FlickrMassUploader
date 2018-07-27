@@ -22,8 +22,7 @@ import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.tags.Tag;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
-//import static flickrmassuploader.FlickrMassUploader.Nsid;
-//import static flickrmassuploader.FlickrMassUploader.auth;
+//import static com.icafe4j.image.meta.MetadataType.IPTC;
 import java.awt.Desktop;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -52,7 +51,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-//import java.util.logging.Level;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
@@ -61,8 +59,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-//import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -90,7 +86,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
      * Creates new form FlickrMassUploader
      */
 //    static final Logger logger=Logger.getLogger(FlickrMassUploader.class.getName());
-    static String Version="Beta 1.34";
+    static String Version;
     static String apiKey = "";
     static String sharedSecret = "";
     static Flickr flickr;
@@ -105,14 +101,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static String Username ="";
     static String Password="";
     static Map<String, String> localphotos;
-//    static Map<String, String> remotephotos;
     static Map<String, String> remotealbums;
     static Map<String, String> remoteLastModifiedDate;
     static Map<String, String> remotePhotosToDelete;
     static Map<String, String> localalbums;
     static Map<String, String> phototoupload;
     static Map<String, String> phototodownload;
-//    static Map<String, String> remotephotosfullpath;
     static Map<String, String> remotephotoswithdata;
     static Map<String, String> remotephotoswithoutdata;
     static Map<String, String> remoteoriginalformat;
@@ -123,7 +117,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     static Thread process;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss");
     SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    //SimpleDateFormat sdfOLD = new SimpleDateFormat("yyyy/MM/dd");
     static boolean StopProcess = false;
     static boolean GraphicsOn = true;
     static boolean CheckDate=false;
@@ -150,8 +143,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         
         
         //redirect standard error to logger
-        //Logger logger = Logger.getLogger(FlickrMassUploader.class.getName());
-//...;
+
         System.setErr(
         new PrintStream(
             new CustomOutputStream(Level.ERROR)
@@ -194,9 +186,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             ButtonUpload.setEnabled(false);
         }
         ComboBoxSyncType.setSelectedIndex(sync);
-        String version = this.getClass().getPackage().getImplementationVersion();
-    //    CheckBoxRestore.setVisible(false);
-    //    ButtonRestore.setVisible(false);
+        Version = this.getClass().getPackage().getImplementationVersion();
         LabelForceStop.setVisible(false);
         ButtonForceStop.setVisible(false);
         if (DownloadVideo.equalsIgnoreCase("Yes")) CheckBoxEnableVideos.setSelected(true);
@@ -248,6 +238,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         jScrollPane2 = new javax.swing.JScrollPane();
         TextPaneLog = new javax.swing.JTextPane();
+        CheckBoxRestoreTags = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Flickr Mass Uploader by Luca Passelli");
@@ -377,6 +368,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         TextPaneLog.setEditable(false);
         jScrollPane2.setViewportView(TextPaneLog);
 
+        CheckBoxRestoreTags.setText("Restore Flicker Tags (Sperimental)");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -408,11 +401,6 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(ButtonUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(293, 293, 293))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(LabelApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -427,7 +415,12 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                                     .addComponent(TextFieldSharedSecret)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(LabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 287, Short.MAX_VALUE)))))
+                                        .addGap(0, 287, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ButtonStop, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(ButtonUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(293, 293, 293)))
                         .addGap(7, 7, 7)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ButtonDeleteCredentials, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -446,10 +439,10 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(ButtonUpdateFlickrCredentials, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(540, 540, 540))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.PREFERRED_SIZE, 819, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10))))
+                                .addGap(18, 18, 18)
+                                .addComponent(CheckBoxRestoreTags, javax.swing.GroupLayout.PREFERRED_SIZE, 512, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(CheckBoxEnableVideos, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 819, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(96, 96, 96)
                         .addComponent(ComboBoxSyncType, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -517,7 +510,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CheckBoxRestore)
-                    .addComponent(ButtonUpdateFlickrCredentials))
+                    .addComponent(ButtonUpdateFlickrCredentials)
+                    .addComponent(CheckBoxRestoreTags))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CheckBoxEnableVideos)
@@ -954,7 +948,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
     
     
-     private void DownloadVideos(int[] conta,int numeroMedia, long InitialTime) throws Exception{
+     public void DownloadVideos(int[] conta,int numeroMedia, long InitialTime) throws Exception{
           
             //System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
                         if (OS.lastIndexOf("windows")>-1){
@@ -1178,7 +1172,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     
     
 
-    private String makeSafeFilename(String input) {
+    public String makeSafeFilename(String input) {
         byte[] fname = input.getBytes();
         byte[] bad = new byte[]{'\\', '/', '"', '*'};
         byte replace = '_';
@@ -1244,29 +1238,25 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 fos.flush();
                 fos.close();
                 inStream.close();
-                Message("Download of " +newFile.getName()+ " comleted! ---- File Lenght : "+newFile.length() + " bytes. ",Level.INFO);
-                Files.copy(tempFile.toPath(), newFile.toPath());
+                Message("Download of " +newFile.getName()+ " comleted! ---- File Lenght : "+tempFile.length() + " bytes. ",Level.INFO);
+                if (!StopProcess)
+                    {
+                if (CheckBoxRestoreTags.isSelected())
+                    {
+                       Collection<Tag> tags=p.getTags();
+                       Metadata meta=new Metadata();
+                       meta.WriteTags(tempFile.getCanonicalPath(), newFile.getCanonicalPath(), tags);
+                    }
+                else
+                    {
+                    Files.copy(tempFile.toPath(), newFile.toPath());
+                    }
                 tempFile.delete();
-                if (StopProcess) tempFile.delete();
+                }
+                
             }else
                    {
                        
-             /*        Message(getOriginalVideoUrl(flickr, photoID));  
-                     Message("Downloading " + newFile.getName());
-                BufferedInputStream inStream = new BufferedInputStream(photoI.getImageAsStream(p, Size.VIDEO_ORIGINAL));
-                FileOutputStream fos = new FileOutputStream(tempFile);
-                int read;
-                while ((read = inStream.read()) != -1) {
-                    if (StopProcess) break;
-                    fos.write(read);
-                }
-                fos.flush();
-                fos.close();
-                inStream.close();
-                Message("Download of " + newFile.getName()+" completed!");
-                Files.copy(tempFile.toPath(), newFile.toPath());
-                tempFile.delete(); 
-                Thread.sleep(100000);*/
                        
                    } 
           }      
@@ -1282,8 +1272,8 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
             UploadMetaData metaData = new UploadMetaData();
 
-            String title = TitoloFoto;
-            metaData.setTitle(title);
+            //DA VEDERE SE POSSIBILE TOGLIERE I METADATA
+            metaData.setTitle(TitoloFoto);
             metaData.setFilename(TitoloFoto);
 
             boolean uploadableFile = VerifyExtension(filename);
@@ -1318,7 +1308,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }
     
 
-    public void RemotePhotoList() {
+    /*public void RemotePhotoList() {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
             remotephotoswithdata = new HashMap<>();
             remotephotoswithoutdata = new HashMap<>();
@@ -1455,7 +1445,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 
         }
     }
-    
+    */
     
     
     public void RemotePhotoList2() {
@@ -1567,7 +1557,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     }
     
     
-        public void UpdateDateTags(String PHOTOID,String DATE) {
+        /*public void UpdateDateTags(String PHOTOID,String DATE) {
         // if button stop is pressed StopProcess become true and we have to termiate all tasks
         if (!StopProcess) {
             try {
@@ -1597,7 +1587,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             }
 
         }
-    }
+    }*/
     
        
     
@@ -1778,7 +1768,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 }
         
     
-    private static String getOriginalVideoUrl(Flickr flickr, String photoId) throws IOException, FlickrException {
+  /*  private static String getOriginalVideoUrl(Flickr flickr, String photoId) throws IOException, FlickrException {
 	String siteUrl = null;
 	for (Size size : (Collection<Size>) flickr.getPhotosInterface().getSizes(photoId, true)) {
             System.out.println(size.getSource());
@@ -1786,7 +1776,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
 			siteUrl = size.getSource();
 	}
 		return siteUrl;
-}
+}*/
     
     
     
@@ -2008,6 +1998,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                     StyleConstants.setForeground(keyWord, java.awt.Color.BLACK);
                 
                 doc.insertString(doc.getLength(), MessaggioCompleto,keyWord);
+                TextPaneLog.setCaretPosition(TextPaneLog.getDocument().getLength());
 
                 Logger.getLogger(FlickrMassUploader.class.getName()).log(level, messaggio);
             } catch (BadLocationException ex) {
@@ -2427,6 +2418,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
     private javax.swing.JButton ButtonUpload;
     private javax.swing.JCheckBox CheckBoxEnableVideos;
     private javax.swing.JCheckBox CheckBoxRestore;
+    private javax.swing.JCheckBox CheckBoxRestoreTags;
     private javax.swing.JComboBox<String> ComboBoxSyncType;
     private javax.swing.JLabel LabelApiKey;
     private javax.swing.JLabel LabelForceStop;

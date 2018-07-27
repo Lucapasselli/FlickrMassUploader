@@ -3,6 +3,10 @@ FlickrMassUploader instructions
 This software is for those people that would backup local photos and videos to flickr or restore flickr photos and videos to a local store.
 Software upload your photos and videos in your flickr accont and then create an album with the same name of the principal folder that contains the media.
 if it founds a photo or video with the same name, album and date the program don't update twice.
+Media are uploaded in private mode (They are visible only for you)
+Program store informations about relative directory of each Media in Flickr Media Description so it can easily restore File in the original position if it is neccessary.
+With restore option program can download all your flickr photoset include videos in full size,in case of photos without file informations, Folder structure is "choosenFoleder"+/NoBackupPhoto+/"AlbumName"+/"IdPhoto.extension". (Photos are downloaded throught api, videos with ChromeDriver)
+Pressing restore button will be downloaded only files that not exists in local system (Your local photos will never be overwritten)
 
 FIRST STEP - REQUIREMENTS (one time only)
 Before proceding please ensure you have the following requirements:
@@ -35,11 +39,6 @@ Launch the application without GUI with /backup or /restore parameter to use pro
 Example : java -jar FlickrMassUploader.jar /backup
 
 
-From version 1.22 you can also safetely restore your files
-Pressing backup button will be downloaded only files that not exists in the local system
-Your photos will never be overwritten.
-In case of photos without file informations Folder structure is "choosenFoleder"+/NoBackupPhoto+/"AlbumName"+/"IdPhoto.extension"
-
 
 
 GitHub Code
@@ -58,7 +57,13 @@ A Special thanks to boncey for flikr4java development and the seleniumhq team!
 
 IMPORTANT: I realized during my tests that flickr sometimes didn't return original video file also using browser, in that case it's impossible to me to download the original one. Remember that not original video files are cutted by Flickr at the third minute.
 
+Beta 1.36  (27/07/2018)
+Only using Graphis enable possibility to import Flickr Tags to local File metadata during Restore operation.
+Fix problem pressing Stop Button during Restore operations, now if download is interrupted file will be not write to disk (only a temp file will be created)
 
+Beta 1.35  (26/07/2018)
+Fix Autoscroll TextLog.
+Fix informations about file lenght during photo download.
 
 Beta 1.34  (23/07/2018)
 NOTE: The exe file is not signed and can be recognized as a virus from some antivirus, if you have problems you can always run the jar file directly. (from command line is java -jar FlicrMassUploader.jar)
