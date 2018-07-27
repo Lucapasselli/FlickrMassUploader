@@ -1251,18 +1251,25 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                        Metadata meta=new Metadata();
                        List TagOri=meta.getTags(tempFile.getCanonicalPath());
                        Iterator tagi=tags.iterator();
-                       Iterator tagorii=TagOri.iterator();
+                       //Iterator tagorii=TagOri.iterator();
                        while (tagi.hasNext())
                        {
                            boolean ToWrite=true;
                            Tag tag=(Tag)tagi.next();
-                           String TextTag=tag.getRaw();
+                           String TextTag=tag.getRaw().trim();
+                           Iterator tagorii=TagOri.iterator();
                            while (tagorii.hasNext())
                            {
-                               if (tagorii.next().toString().equalsIgnoreCase(TextTag))
+                               String tagoristring=tagorii.next().toString().trim();
+                              // System.out.println(tagoristring);
+                               if (tagoristring.equalsIgnoreCase(TextTag))
                                 {
                                     ToWrite=false;
-                                }   
+                                } 
+                               else
+                                 {
+                                    // System.out.println(tagoristring+"---"+TextTag);
+                                 }  
                            }
                            if (ToWrite) TagsToWrite.add(TextTag);
                        }

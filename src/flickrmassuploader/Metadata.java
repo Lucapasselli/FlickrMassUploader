@@ -149,6 +149,7 @@ public class Metadata {
                             
                             String tag=Tagsi.next().toString();
                             iptcs.add(new IPTCDataSet(IPTCApplicationTag.KEY_WORDS,tag));
+                           // System.out.println("Scritti : "+tag);
 			}
 			return iptcs;
 		}
