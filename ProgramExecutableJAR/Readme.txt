@@ -57,6 +57,9 @@ A Special thanks to boncey for flikr4java development and the seleniumhq team!
 
 IMPORTANT: I realized during my tests that flickr sometimes didn't return original video file also using browser, in that case it's impossible to me to download the original one. Remember that not original video files are cutted by Flickr at the third minute.
 
+Stable 1.40  (14/08/2018)
+Minor Graphical improvments
+
 Beta 1.36  (27/07/2018)
 Only using Graphis enable possibility to import Flickr Tags to local File metadata during Restore operation. (Note that original photo metadata are always restored)
 Fix problem pressing Stop Button during Restore operations, now if download is interrupted file will be not write to disk (only a temp file will be created)
