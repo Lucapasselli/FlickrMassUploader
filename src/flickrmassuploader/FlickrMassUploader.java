@@ -188,7 +188,9 @@ public class FlickrMassUploader extends javax.swing.JFrame {
             ButtonUpload.setEnabled(false);
         }
         ComboBoxSyncType.setSelectedIndex(sync);
-        Version = this.getClass().getPackage().getImplementationVersion();
+        // Version = this.getClass().getPackage().getImplementationVersion();
+        Version="1.41";
+       // System.out.println("Versione="+Version);
         LabelForceStop.setVisible(false);
         ButtonForceStop.setVisible(false);
         if (DownloadVideo.equalsIgnoreCase("Yes")) CheckBoxEnableVideos.setSelected(true);
@@ -979,12 +981,22 @@ public class FlickrMassUploader extends javax.swing.JFrame {
      // LOGIN
      try {
 		//driver.get("https://login.yahoo.com");
-                driver.get("https://www.flickr.com/signin");
-                WebElement username = driver.findElement(By.name("username"));
+                driver.get("https://identity.flickr.com/login");
+               // System.out.println(driver.getPageSource());
+                WebElement username = driver.findElement(By.id("login-email"));
                 username.sendKeys(Username);
-                WebElement button = driver.findElement(By.name("signin"));
-                button.click();
+                WebElement button = driver.findElement(By.id("login-form"));
+                //button.click();
+                button.submit();
+                //System.out.println(button.submit());
                 Thread.sleep(5000);
+                System.out.println(driver.getCurrentUrl());
+                //WebElement username1 = driver.findElement(By.name("username"));
+                //username1.sendKeys(Username);
+                WebElement button1 = driver.findElement(By.id("login-signin"));
+                button1.click();
+                Thread.sleep(5000);
+                System.out.println(driver.getCurrentUrl());
                 WebElement password = driver.findElement(By.name("password"));
                 password.sendKeys(Password);
                 WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
