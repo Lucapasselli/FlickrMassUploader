@@ -189,7 +189,7 @@ public class FlickrMassUploader extends javax.swing.JFrame {
         }
         ComboBoxSyncType.setSelectedIndex(sync);
         // Version = this.getClass().getPackage().getImplementationVersion();
-        Version="1.41";
+        Version="1.42";
        // System.out.println("Versione="+Version);
         LabelForceStop.setVisible(false);
         ButtonForceStop.setVisible(false);
@@ -736,22 +736,18 @@ public class FlickrMassUploader extends javax.swing.JFrame {
      
             // LOGIN
              try {
-            driver.get("https://www.flickr.com/signin");
-            //Message(driver.getCurrentUrl());
-            WebElement username = driver.findElement(By.name("username"));
-            username.sendKeys(Username);
-            WebElement button = driver.findElement(By.name("signin"));
-            button.click();
-            Thread.sleep(5000);
-            WebElement password = driver.findElement(By.name("password"));
-            password.sendKeys(Password);
-            WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
-            buttonpassword.click();
-            Thread.sleep(5000);
-           /* driver.navigate().to("https://www.flickr.com/signin");
-            
-            Thread.sleep(3000);*/
-            //Message(driver.getCurrentUrl());
+                driver.get("https://identity.flickr.com/login");
+                WebElement username = driver.findElement(By.id("login-email"));
+                username.sendKeys(Username);
+                WebElement button = driver.findElement(By.id("login-form"));
+                button.submit();
+                Thread.sleep(5000);
+                System.out.println(driver.getCurrentUrl());              
+                WebElement password = driver.findElement(By.id("login-password"));
+                password.sendKeys(Password);
+                button.submit();
+                Thread.sleep(5000);
+                System.out.println(driver.getCurrentUrl());
             if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
             {
                 driver.quit();
@@ -992,18 +988,20 @@ public class FlickrMassUploader extends javax.swing.JFrame {
                 Thread.sleep(5000);
                 System.out.println(driver.getCurrentUrl());
                 //WebElement username1 = driver.findElement(By.name("username"));
-                //username1.sendKeys(Username);
-                WebElement button1 = driver.findElement(By.id("login-signin"));
-                button1.click();
+                //username1.sendKeys(Username);               
+                WebElement password = driver.findElement(By.id("login-password"));
+                password.sendKeys(Password);
+               // WebElement button1 = driver.findElement(By.id("login-form"));
+                button.submit();
+                //button1.click();
                 Thread.sleep(5000);
                 System.out.println(driver.getCurrentUrl());
-                WebElement password = driver.findElement(By.name("password"));
-                password.sendKeys(Password);
-                WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
-                buttonpassword.click();
-                Thread.sleep(5000);
-                //driver.navigate().to("https://www.flickr.com/signin");
-                
+                //WebElement password = driver.findElement(By.name("password"));
+               // password.sendKeys(Password);
+                //WebElement buttonpassword = driver.findElement(By.name("verifyPassword"));
+               // buttonpassword.click();
+               // Thread.sleep(5000);
+                //driver.navigate().to("https://www.flickr.com/signin");                
                // Thread.sleep(5000);
                 if (!driver.getCurrentUrl().contains("https://www.flickr.com/"))
                     {
